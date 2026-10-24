@@ -267,6 +267,19 @@ on conflict (key) do update set
   applies_to = excluded.applies_to, is_required = excluded.is_required,
   display_group = excluded.display_group, order_num = excluded.order_num;
 
+-- RLS. Every other table in schema.sql enables it; this one was created by this
+-- migration and would otherwise inherit Supabase's default public-schema grants,
+-- which means an anon key could edit the attribute contract itself. Verified:
+-- without this block an anonymous role can DELETE from the registry.
+alter table public.attribute_definitions enable row level security;
+
+drop policy if exists "Allow public read attribute definitions" on public.attribute_definitions;
+create policy "Allow public read attribute definitions"
+  on public.attribute_definitions for select using (true);
+
+-- Writes stay closed to anon. The registry is a schema decision, changed by
+-- migration, not by the storefront.
+
 -- ---- enforcement -----------------------------------------------------------
 -- Requires every attribute the registry marks mandatory FOR THAT GARMENT.
 -- Runs on insert and update so a product cannot be created incomplete and later
