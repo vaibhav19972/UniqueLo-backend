@@ -93,11 +93,11 @@ alter table public.products
 -- PART C - trust and logistics fields (the actual product work)
 -- ---------------------------------------------------------------------------
 
--- COD is the #1 first-order blocker in tier-2/3. Boolean with no default on
--- purpose: a new product must state this explicitly rather than inherit a
--- policy that may be wrong for its price point or category.
+-- COD is the #1 first-order blocker in tier-2/3. Owner decision 2026-10-24:
+-- available on EVERY SKU, so the default is true. Still a column, not a constant,
+-- because a per-SKU opt-out is a business decision that must not need a migration.
 alter table public.products
-  add column if not exists cod_available boolean not null default false;
+  add column if not exists cod_available boolean not null default true;
 
 -- A promised range, not a vague "5-7 days". min/max so the PDP can state a
 -- window and the checkout can state a date.
@@ -114,10 +114,11 @@ alter table public.products
     or (delivery_days_min >= 0 and delivery_days_max >= delivery_days_min)
   );
 
--- Return window drives completion for a first-time buyer. 0 means
--- non-returnable, which is the honest value for personalised pieces.
+-- Return window drives completion for a first-time buyer. Owner decision
+-- 2026-10-24: 7 days. 0 remains meaningful for made-to-order/personalised pieces,
+-- which is why this is a number and not a boolean.
 alter table public.products
-  add column if not exists return_window_days smallint not null default 0;
+  add column if not exists return_window_days smallint not null default 7;
 
 alter table public.products
   drop constraint if exists products_return_window_valid;
@@ -156,74 +157,169 @@ alter table public.products
 -- filling. Nullable, no change required here.
 
 -- ---------------------------------------------------------------------------
--- PART D - suppliers, so craft_cluster can be a real FK later
+-- PART D - marketplace attribute system (Myntra / Ajio parity)
 -- ---------------------------------------------------------------------------
+--
+-- Research basis (2026-10-24). Both Myntra and Ajio validate mandatory
+-- attributes PER ARTICLE TYPE, not globally: a tee needs neck/sleeve/pattern/
+-- length/occasion, a dress needs neckline/lining/sleeve, footwear needs upper/
+-- sole/heel/toe. Their QC docs list the failures that matter: missing mandatory
+-- attributes, pattern/fit mismatch, material claims without evidence, missing
+-- country of origin, and manufacturer/packer declarations.
+--
+-- The wrong response is to add 30 nullable columns to products. That is how the
+-- catalogue got 29 columns of prose in the first place, and it guarantees a
+-- migration every time a new garment type arrives.
+--
+-- The right response is the one the marketplaces themselves use: a REGISTRY that
+-- says which attributes are required for which garment, plus one jsonb column
+-- holding the values. Adding a garment type becomes an INSERT, not an ALTER.
 
-create table if not exists public.suppliers (
-  id                uuid primary key default gen_random_uuid(),
-  slug              text unique not null,
-  name              text not null,
-  -- where the work is physically done; distinct from craft tradition
-  city              text,
-  state             text,
-  country_code      char(2) not null default 'IN',
-  gstin             text,
-  contact_email     text,
-  contact_phone     text,
-  -- whether anyone has actually visited/verified, not whether the name sounds real
-  verified_at       timestamptz,
-  notes             text,
-  is_active         boolean not null default true,
-  created_at        timestamptz not null default now(),
-
-  constraint suppliers_country_iso check (country_code ~ '^[A-Z]{2}$'),
-  constraint suppliers_gstin_format
-    check (gstin is null or gstin ~ '^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]{3}$')
+create table if not exists public.attribute_definitions (
+  key            text primary key,          -- 'neck_type', 'sleeve_length'
+  label          text not null,             -- 'Neck Type'
+  data_type      text not null default 'enum',
+  unit           text,                      -- 'cm', 'gsm'
+  options        text[],                    -- allowed values when data_type='enum'
+  -- which garment types require this attribute. Empty = applies to all.
+  applies_to     text[] not null default '{}',
+  is_required    boolean not null default false,
+  display_group  text,                       -- 'Style', 'Fabric', 'Care', 'Fit'
+  order_num      integer not null default 0,
+  created_at     timestamptz not null default now(),
+  constraint attribute_definitions_type_valid
+    check (data_type in ('enum', 'text', 'number', 'boolean', 'measurement'))
 );
 
-comment on table public.suppliers is
-  'Real manufacturing partners. A product references a supplier only when verified_at is set; craft tradition is separate (motifs/universe).';
+comment on table public.attribute_definitions is
+  'Per-garment attribute contract. Mirrors the Myntra/Ajio category attribute matrix: an attribute can be required for tees and irrelevant for scarves. Add a garment type by inserting rows here, never by altering products.';
 
-create index if not exists suppliers_active_idx on public.suppliers (is_active)
-  where is_active;
+-- The values live here. One column, unlimited attributes.
+alter table public.products
+  add column if not exists attributes jsonb not null default '{}'::jsonb;
 
--- Join table rather than a column, because one SKU can involve more than one
--- workshop (embroidery vs stitching).
-create table if not exists public.product_suppliers (
-  product_slug  text not null references public.products(slug) on delete cascade,
-  supplier_id   uuid not null references public.suppliers(id) on delete restrict,
-  role          text not null default 'manufacturer',
-  created_at    timestamptz not null default now(),
-  primary key (product_slug, supplier_id, role),
-  constraint product_suppliers_role_valid
-    check (role in ('manufacturer', 'embroiderer', 'packer', 'dyer'))
-);
+comment on column public.products.attributes is
+  'Category-scoped attribute values, keyed by attribute_definitions.key. Validated on write against the registry.';
 
-alter table public.suppliers enable row level security;
-alter table public.product_suppliers enable row level security;
+-- Style-level identity. Marketplaces key a design family by a Style ID and
+-- every size/colour as a variant beneath it; reusing a style code for an
+-- unrelated design is an explicit QC rejection on both platforms.
+alter table public.products
+  add column if not exists style_code text;
 
--- Public storefront may read active suppliers' display fields; nobody writes
--- through the anon key.
-do $$
+alter table public.products
+  drop constraint if exists products_style_code_unique;
+alter table public.products
+  add constraint products_style_code_unique unique (style_code);
+
+-- Fit guidance, which is what the "and this is how it sits" line on a PDP is.
+alter table public.products
+  add column if not exists fit_notes text,
+  add column if not exists model_height_cm smallint,
+  add column if not exists model_worn_size text;
+
+-- Barcode per variant. Both platforms require a unique scannable identifier per
+-- size+colour and reject reuse across sizes. SKU alone is not enough: it is our
+-- internal key, EAN is the physical one.
+alter table public.variants
+  add column if not exists barcode text;
+
+alter table public.variants
+  drop constraint if exists variants_barcode_unique;
+alter table public.variants
+  add constraint variants_barcode_unique unique (barcode);
+
+-- Shipping cuboid. Carriers bill on volumetric weight; weight_grams alone gives
+-- the wrong number for anything bulky like a hoodie.
+alter table public.products
+  add column if not exists package_length_mm smallint,
+  add column if not exists package_width_mm smallint,
+  add column if not exists package_height_mm smallint;
+
+-- ---- registry seed: the attribute matrix for our actual garment types -------
+-- Only the attributes that are (a) mandatory on Myntra/Ajio for that article
+-- type, or (b) genuinely change a purchase decision. Deliberately not 40 fields.
+--
+-- Boundary rule: an attribute lives in `attributes` jsonb ONLY if it has no
+-- first-class column. Country of origin / manufacturer / packed_by are columns
+-- (legal declarations every SKU carries), and wash care is the existing `care`
+-- text[]. Putting them in the registry too would mean two places to fill and two
+-- places to forget.
+insert into public.attribute_definitions
+  (key, label, data_type, options, applies_to, is_required, display_group, order_num)
+values
+  ('pattern',      'Pattern',      'enum', array['solid','printed','embroidered','striped','checkered','colorblock'], array['tee','hoodie','shirt','jacket','cardigan','vest','pants','scarf','tote'], true,  'Style', 10),
+  ('neck_type',    'Neck Type',    'enum', array['round','v-neck','crew','collar','band','hooded','square'], array['tee','hoodie','shirt','cardigan','vest'], true,  'Style', 20),
+  ('sleeve_length', 'Sleeve Length','enum', array['sleeveless','short','three-quarter','long'], array['tee','hoodie','shirt','jacket','cardigan','vest'], true, 'Style', 30),
+  ('closure',      'Closure',      'enum', array['pull-on','button','zip','drawstring','tie','none'], array['hoodie','shirt','jacket','cardigan','vest','pants'], true, 'Style', 40),
+  ('length',       'Garment Length','enum', array['cropped','regular','longline','full'], array['tee','hoodie','shirt','jacket','cardigan','vest'], false, 'Style', 50),
+  ('rise',         'Rise',         'enum', array['low','mid','high'], array['pants'], true, 'Style', 60),
+  ('occasion',     'Occasion',     'enum', array['casual','everyday','festive','work','party','travel'], array[]::text[], true, 'Style', 70),
+  ('hemline',      'Hemline',      'enum', array['straight','curved','asymmetric','raw'], array['tee','hoodie','shirt','jacket','cardigan','vest'], false, 'Style', 80),
+  ('lining',       'Lining',       'enum', array['unlined','partial','full'], array['jacket','vest','pants'], false, 'Style', 90),
+  ('fabric_composition', 'Fabric Composition', 'text', null, array[]::text[], true, 'Fabric', 100),
+  ('fabric_weight_gsm',  'Fabric Weight',      'measurement', null, array['tee','hoodie','pants'], false, 'Fabric', 110),
+  ('transparency', 'Transparency', 'enum', array['opaque','semi-sheer','sheer'], array['tee','shirt','scarf'], false, 'Fabric', 120),
+  ('stretch',      'Stretch',      'enum', array['non-stretch','low','medium','high'], array[]::text[], false, 'Fabric', 130),
+  ('iron_care',    'Iron Care',    'text', null, array[]::text[], false, 'Care', 150)
+on conflict (key) do update set
+  label = excluded.label, data_type = excluded.data_type, options = excluded.options,
+  applies_to = excluded.applies_to, is_required = excluded.is_required,
+  display_group = excluded.display_group, order_num = excluded.order_num;
+
+-- ---- enforcement -----------------------------------------------------------
+-- Requires every attribute the registry marks mandatory FOR THAT GARMENT.
+-- Runs on insert and update so a product cannot be created incomplete and later
+-- patched, and so a newly-required attribute surfaces on the next write instead
+-- of on a customer's screen.
+create or replace function public.products_validate_attributes()
+returns trigger
+language plpgsql
+as $$
+declare
+  missing text;
 begin
-  if not exists (
-    select 1 from pg_policies
-    where schemaname = 'public' and tablename = 'suppliers'
-      and policyname = 'suppliers_public_read'
-  ) then
-    create policy suppliers_public_read on public.suppliers
-      for select using (is_active);
+  select string_agg(d.key, ', ' order by d.order_num)
+    into missing
+  from public.attribute_definitions d
+  where d.is_required
+    and (d.applies_to = '{}' or new.garment_type = any(d.applies_to))
+    and not (new.attributes ? d.key);
+
+  if missing is not null then
+    raise exception 'product % is missing required attribute(s) for garment "%": %',
+      new.slug, coalesce(new.garment_type, '(none)'), missing
+      using errcode = 'check_violation';
   end if;
 
-  if not exists (
-    select 1 from pg_policies
-    where schemaname = 'public' and tablename = 'product_suppliers'
-      and policyname = 'product_suppliers_public_read'
-  ) then
-    create policy product_suppliers_public_read on public.product_suppliers
-      for select using (true);
-  end if;
-end $$;
+  -- enum values must be one of the declared options
+  declare
+    bad text;
+  begin
+    select string_agg(d.key || '=' || (new.attributes ->> d.key), ', ')
+      into bad
+    from public.attribute_definitions d
+    where d.data_type = 'enum'
+      and d.options is not null
+      and new.attributes ? d.key
+      and not ((new.attributes ->> d.key) = any(d.options));
+
+    if bad is not null then
+      raise exception 'product % has invalid enum attribute value(s): %', new.slug, bad
+        using errcode = 'check_violation';
+    end if;
+  end;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists products_validate_attributes on public.products;
+create trigger products_validate_attributes
+  before insert or update on public.products
+  for each row execute function public.products_validate_attributes();
+
+
 
 -- ---------------------------------------------------------------------------
 -- PART E - cache guard: rating/review_count are derived, never authored

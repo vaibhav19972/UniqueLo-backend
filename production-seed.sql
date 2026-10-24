@@ -107,7 +107,15 @@ insert into public.products (
   return_window_days,
   weight_grams,
   hsn_code,
-  size_chart
+  size_chart,
+  style_code,
+  attributes,
+  fit_notes,
+  model_height_cm,
+  model_worn_size,
+  package_length_mm,
+  package_width_mm,
+  package_height_mm
 ) values (
   'sakura-ronin-hoodie',
   'Sakura Ronin Hoodie',
@@ -143,7 +151,15 @@ insert into public.products (
   7,
   650,
   '6109',
-  '{"S":{"chest":100,"length":66},"M":{"chest":105,"length":68},"L":{"chest":110,"length":70},"XL":{"chest":115,"length":72}}'::jsonb
+  '{"S":{"chest":100,"length":66},"M":{"chest":105,"length":68},"L":{"chest":110,"length":70},"XL":{"chest":115,"length":72}}'::jsonb,
+  'UL-HD-001',
+  '{"pattern":"embroidered","neck_type":"hooded","sleeve_length":"long","closure":"pull-on","length":"regular","occasion":"everyday","hemline":"curved","fabric_composition":"100% combed cotton fleece","fabric_weight_gsm":"450","stretch":"low"}'::jsonb,
+  'Relaxed through the body; size down for a closer fit.',
+  178,
+  'M',
+  320,
+  240,
+  60
 ) on conflict (slug) do update set
   name = excluded.name,
   subtitle = excluded.subtitle,
@@ -178,7 +194,15 @@ insert into public.products (
   return_window_days = excluded.return_window_days,
   weight_grams = excluded.weight_grams,
   hsn_code = excluded.hsn_code,
-  size_chart = excluded.size_chart;
+  size_chart = excluded.size_chart,
+  style_code = excluded.style_code,
+  attributes = excluded.attributes,
+  fit_notes = excluded.fit_notes,
+  model_height_cm = excluded.model_height_cm,
+  model_worn_size = excluded.model_worn_size,
+  package_length_mm = excluded.package_length_mm,
+  package_width_mm = excluded.package_width_mm,
+  package_height_mm = excluded.package_height_mm;
 
 delete from public.product_images where product_slug = 'sakura-ronin-hoodie';
 insert into public.product_images (product_slug, src, alt, color, sort_order) values
@@ -190,19 +214,19 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-6.jpg', 'Sakura Ronin Hoodie — lifestyle shot', NULL, 5);
 
 delete from public.variants where product_slug = 'sakura-ronin-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values
-  ('SRH-WARM-XS', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'XS', 349900, NULL, 'in-stock', 14),
-  ('SRH-WARM-S', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'S', 349900, NULL, 'in-stock', 14),
-  ('SRH-WARM-M', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'M', 349900, NULL, 'low-stock', 2),
-  ('SRH-WARM-L', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'L', 349900, NULL, 'in-stock', 14),
-  ('SRH-WARM-XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'XL', 349900, NULL, 'in-stock', 14),
-  ('SRH-WARM-2XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', '2XL', 349900, NULL, 'in-stock', 14),
-  ('SRH-WARM-3XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', '3XL', 349900, NULL, 'low-stock', 2),
-  ('SRH-MIDNIGHT-S', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'S', 349900, NULL, 'in-stock', 9),
-  ('SRH-MIDNIGHT-M', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'M', 349900, NULL, 'in-stock', 9),
-  ('SRH-MIDNIGHT-L', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'L', 349900, NULL, 'in-stock', 9),
-  ('SRH-MIDNIGHT-XL', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'XL', 349900, NULL, 'in-stock', 9),
-  ('SRH-MIDNIGHT-2XL', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', '2XL', 349900, NULL, 'in-stock', 9);
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
+  ('SRH-WARM-XS', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'XS', 349900, NULL, 'in-stock', 14, '8901292097789'),
+  ('SRH-WARM-S', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'S', 349900, NULL, 'in-stock', 14, '8901027591547'),
+  ('SRH-WARM-M', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'M', 349900, NULL, 'low-stock', 2, '8901598564011'),
+  ('SRH-WARM-L', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'L', 349900, NULL, 'in-stock', 14, '8901040187692'),
+  ('SRH-WARM-XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'XL', 349900, NULL, 'in-stock', 14, '8901815357213'),
+  ('SRH-WARM-2XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', '2XL', 349900, NULL, 'in-stock', 14, '8901321827525'),
+  ('SRH-WARM-3XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', '3XL', 349900, NULL, 'low-stock', 2, '8901926385603'),
+  ('SRH-MIDNIGHT-S', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'S', 349900, NULL, 'in-stock', 9, '8901382790583'),
+  ('SRH-MIDNIGHT-M', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'M', 349900, NULL, 'in-stock', 9, '8901379629540'),
+  ('SRH-MIDNIGHT-L', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'L', 349900, NULL, 'in-stock', 9, '8901371921322'),
+  ('SRH-MIDNIGHT-XL', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'XL', 349900, NULL, 'in-stock', 9, '8901146101328'),
+  ('SRH-MIDNIGHT-2XL', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', '2XL', 349900, NULL, 'in-stock', 9, '8901316912500');
 
 delete from public.embroidery_details where product_slug = 'sakura-ronin-hoodie';
 insert into public.embroidery_details (
@@ -250,7 +274,15 @@ insert into public.products (
   return_window_days,
   weight_grams,
   hsn_code,
-  size_chart
+  size_chart,
+  style_code,
+  attributes,
+  fit_notes,
+  model_height_cm,
+  model_worn_size,
+  package_length_mm,
+  package_width_mm,
+  package_height_mm
 ) values (
   'guardian-stripes-pullover',
   'Guardian Stripes Pullover',
@@ -286,7 +318,15 @@ insert into public.products (
   7,
   700,
   '6110',
-  '{"S":{"chest":102,"length":67},"M":{"chest":107,"length":69},"L":{"chest":112,"length":71},"XL":{"chest":117,"length":73}}'::jsonb
+  '{"S":{"chest":102,"length":67},"M":{"chest":107,"length":69},"L":{"chest":112,"length":71},"XL":{"chest":117,"length":73}}'::jsonb,
+  'UL-HD-002',
+  '{"pattern":"embroidered","neck_type":"hooded","sleeve_length":"long","closure":"pull-on","length":"regular","occasion":"everyday","hemline":"curved","fabric_composition":"100% combed cotton fleece","fabric_weight_gsm":"450","stretch":"low"}'::jsonb,
+  'Relaxed through the body; size down for a closer fit.',
+  178,
+  'M',
+  320,
+  240,
+  60
 ) on conflict (slug) do update set
   name = excluded.name,
   subtitle = excluded.subtitle,
@@ -321,7 +361,15 @@ insert into public.products (
   return_window_days = excluded.return_window_days,
   weight_grams = excluded.weight_grams,
   hsn_code = excluded.hsn_code,
-  size_chart = excluded.size_chart;
+  size_chart = excluded.size_chart,
+  style_code = excluded.style_code,
+  attributes = excluded.attributes,
+  fit_notes = excluded.fit_notes,
+  model_height_cm = excluded.model_height_cm,
+  model_worn_size = excluded.model_worn_size,
+  package_length_mm = excluded.package_length_mm,
+  package_width_mm = excluded.package_width_mm,
+  package_height_mm = excluded.package_height_mm;
 
 delete from public.product_images where product_slug = 'guardian-stripes-pullover';
 insert into public.product_images (product_slug, src, alt, color, sort_order) values
@@ -329,19 +377,19 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('guardian-stripes-pullover', '/images/products/sashiko-selvedge-denim-1.jpg', 'Guardian Stripes Pullover — stripe macro', NULL, 1);
 
 delete from public.variants where product_slug = 'guardian-stripes-pullover';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values
-  ('GSP-NAVY-XS', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'XS', 359900, NULL, 'in-stock', 14),
-  ('GSP-NAVY-S', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'S', 359900, NULL, 'in-stock', 14),
-  ('GSP-NAVY-M', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'M', 359900, NULL, 'in-stock', 14),
-  ('GSP-NAVY-L', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'L', 359900, NULL, 'in-stock', 14),
-  ('GSP-NAVY-XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'XL', 359900, NULL, 'in-stock', 14),
-  ('GSP-NAVY-2XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', '2XL', 359900, NULL, 'in-stock', 14),
-  ('GSP-NAVY-3XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', '3XL', 359900, NULL, 'in-stock', 14),
-  ('GSP-STORM-S', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'S', 359900, NULL, 'in-stock', 9),
-  ('GSP-STORM-M', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'M', 359900, NULL, 'in-stock', 9),
-  ('GSP-STORM-L', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'L', 359900, NULL, 'in-stock', 9),
-  ('GSP-STORM-XL', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'XL', 359900, NULL, 'in-stock', 9),
-  ('GSP-STORM-2XL', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', '2XL', 359900, NULL, 'in-stock', 9);
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
+  ('GSP-NAVY-XS', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'XS', 359900, NULL, 'in-stock', 14, '8901746531916'),
+  ('GSP-NAVY-S', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'S', 359900, NULL, 'in-stock', 14, '8901226856070'),
+  ('GSP-NAVY-M', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'M', 359900, NULL, 'in-stock', 14, '8901050090739'),
+  ('GSP-NAVY-L', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'L', 359900, NULL, 'in-stock', 14, '8901858718117'),
+  ('GSP-NAVY-XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'XL', 359900, NULL, 'in-stock', 14, '8901952304878'),
+  ('GSP-NAVY-2XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', '2XL', 359900, NULL, 'in-stock', 14, '8901378467498'),
+  ('GSP-NAVY-3XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', '3XL', 359900, NULL, 'in-stock', 14, '8901571817613'),
+  ('GSP-STORM-S', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'S', 359900, NULL, 'in-stock', 9, '8901540298498'),
+  ('GSP-STORM-M', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'M', 359900, NULL, 'in-stock', 9, '8901172029278'),
+  ('GSP-STORM-L', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'L', 359900, NULL, 'in-stock', 9, '8901090097129'),
+  ('GSP-STORM-XL', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'XL', 359900, NULL, 'in-stock', 9, '8901536824731'),
+  ('GSP-STORM-2XL', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', '2XL', 359900, NULL, 'in-stock', 9, '8901766091549');
 
 delete from public.embroidery_details where product_slug = 'guardian-stripes-pullover';
 insert into public.embroidery_details (
@@ -389,7 +437,15 @@ insert into public.products (
   return_window_days,
   weight_grams,
   hsn_code,
-  size_chart
+  size_chart,
+  style_code,
+  attributes,
+  fit_notes,
+  model_height_cm,
+  model_worn_size,
+  package_length_mm,
+  package_width_mm,
+  package_height_mm
 ) values (
   'arch-jaal-scarf',
   'Arch Jaal Silk Scarf',
@@ -425,7 +481,15 @@ insert into public.products (
   7,
   180,
   '6214',
-  '{"ONE":{"length":180,"width":70}}'::jsonb
+  '{"ONE":{"length":180,"width":70}}'::jsonb,
+  'UL-SC-001',
+  '{"pattern":"embroidered","occasion":"festive","fabric_composition":"100% mulberry silk","transparency":"opaque","stretch":"non-stretch"}'::jsonb,
+  'Generous length, wraps twice.',
+  172,
+  'ONE',
+  240,
+  180,
+  30
 ) on conflict (slug) do update set
   name = excluded.name,
   subtitle = excluded.subtitle,
@@ -460,7 +524,15 @@ insert into public.products (
   return_window_days = excluded.return_window_days,
   weight_grams = excluded.weight_grams,
   hsn_code = excluded.hsn_code,
-  size_chart = excluded.size_chart;
+  size_chart = excluded.size_chart,
+  style_code = excluded.style_code,
+  attributes = excluded.attributes,
+  fit_notes = excluded.fit_notes,
+  model_height_cm = excluded.model_height_cm,
+  model_worn_size = excluded.model_worn_size,
+  package_length_mm = excluded.package_length_mm,
+  package_width_mm = excluded.package_width_mm,
+  package_height_mm = excluded.package_height_mm;
 
 delete from public.product_images where product_slug = 'arch-jaal-scarf';
 insert into public.product_images (product_slug, src, alt, color, sort_order) values
@@ -468,8 +540,8 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('arch-jaal-scarf', '/images/products/embroidered-silk-scarf-1.jpg', 'Arch Jaal Silk Scarf — lattice macro', NULL, 1);
 
 delete from public.variants where product_slug = 'arch-jaal-scarf';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values
-  ('AJS-OS-GLD', 'arch-jaal-scarf', 'Ivory & Gold', '#efe4c8', 'OS', 189900, NULL, 'in-stock', 11);
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
+  ('AJS-OS-GLD', 'arch-jaal-scarf', 'Ivory & Gold', '#efe4c8', 'OS', 189900, NULL, 'in-stock', 11, '8901917966729');
 
 delete from public.embroidery_details where product_slug = 'arch-jaal-scarf';
 insert into public.embroidery_details (

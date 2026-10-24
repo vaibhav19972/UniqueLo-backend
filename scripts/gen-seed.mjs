@@ -38,7 +38,35 @@ const CHECK = process.argv.includes('--check');
 
 // Columns the migration adds. A product missing any of these is a hard failure —
 // this is the guard that stops the fabricated-field problem coming back.
-const REQUIRED_TRUST = ['countryOfOrigin', 'codAvailable', 'returnWindowDays'];
+const REQUIRED_TRUST = ['countryOfOrigin', 'codAvailable', 'returnWindowDays', 'styleCode', 'attributes'];
+
+// Attribute contract, mirroring attribute_definitions in the migration. Kept in
+// JS as well so a bad catalogue fails at generation with a readable message
+// instead of surfacing as a Postgres trigger error at deploy time.
+const ATTR_CONTRACT = {
+  pattern:      ['solid','printed','embroidered','striped','checkered','colorblock'],
+  neck_type:    ['round','v-neck','crew','collar','band','hooded','square'],
+  sleeve_length:['sleeveless','short','three-quarter','long'],
+  closure:      ['pull-on','button','zip','drawstring','tie','none'],
+  length:       ['cropped','regular','longline','full'],
+  rise:         ['low','mid','high'],
+  occasion:     ['casual','everyday','festive','work','party','travel'],
+  hemline:      ['straight','curved','asymmetric','raw'],
+  lining:       ['unlined','partial','full'],
+  transparency: ['opaque','semi-sheer','sheer'],
+  stretch:      ['non-stretch','low','medium','high'],
+};
+const REQUIRED_BY_GARMENT = {
+  tee:      ['pattern','neck_type','sleeve_length','occasion','fabric_composition'],
+  hoodie:   ['pattern','neck_type','sleeve_length','closure','occasion','fabric_composition'],
+  shirt:    ['pattern','neck_type','sleeve_length','closure','occasion','fabric_composition'],
+  jacket:   ['pattern','sleeve_length','closure','occasion','fabric_composition'],
+  cardigan: ['pattern','neck_type','sleeve_length','closure','occasion','fabric_composition'],
+  vest:     ['pattern','neck_type','occasion','fabric_composition'],
+  pants:    ['pattern','closure','rise','occasion','fabric_composition'],
+  scarf:    ['pattern','occasion','fabric_composition'],
+  tote:     ['pattern','occasion','fabric_composition'],
+};
 const REQUIRED = ['slug', 'name', 'subtitle', 'description'];
 
 const fail = (msg) => {
@@ -97,6 +125,18 @@ for (const p of products) {
   if (p.motifId && !mslugs.has(p.motifId)) errors.push(`${p.slug}: unknown motif_id "${p.motifId}"`);
   if (p.universeSlug && !uslugs.has(p.universeSlug)) errors.push(`${p.slug}: unknown universe_slug "${p.universeSlug}"`);
   if (!Array.isArray(p.variants) || !p.variants.length) errors.push(`${p.slug}: has no variants`);
+
+  if (p.attributes && typeof p.attributes === 'object') {
+    const need = REQUIRED_BY_GARMENT[p.garmentType] ?? [];
+    for (const k of need) {
+      if (p.attributes[k] === undefined) errors.push(`${p.slug}: garment "${p.garmentType}" requires attribute "${k}"`);
+    }
+    for (const [k, v] of Object.entries(p.attributes)) {
+      const opts = ATTR_CONTRACT[k];
+      if (opts && !opts.includes(String(v)))
+        errors.push(`${p.slug}: attribute "${k}" = "${v}" is not one of ${opts.join('|')}`);
+    }
+  }
   for (const v of p.variants ?? []) {
     if (!v.sku) errors.push(`${p.slug}: variant missing sku`);
     if (!Number.isInteger(v.priceCents) || v.priceCents <= 0) errors.push(`${p.slug}/${v.sku}: priceCents must be a positive integer`);
@@ -252,6 +292,9 @@ const COLS = [
   'country_of_origin', 'manufacturer_name', 'manufacturer_address', 'packed_by',
   'cod_available', 'delivery_days_min', 'delivery_days_max', 'return_window_days',
   'weight_grams', 'hsn_code', 'size_chart',
+  // migration part D — marketplace attribute system
+  'style_code', 'attributes', 'fit_notes', 'model_height_cm', 'model_worn_size',
+  'package_length_mm', 'package_width_mm', 'package_height_mm',
 ];
 
 for (const p of products) {
@@ -274,6 +317,11 @@ for (const p of products) {
     bool(p.codAvailable), num(p.deliveryDaysMin), num(p.deliveryDaysMax),
     num(p.returnWindowDays), num(p.weightGrams), p.hsnCode ? q(p.hsnCode) : 'NULL',
     jsonb(p.sizeChart),
+    p.styleCode ? q(p.styleCode) : 'NULL',
+    jsonb(p.attributes ?? {}),
+    p.fitNotes ? q(p.fitNotes) : 'NULL',
+    num(p.modelHeightCm), p.modelWornSize ? q(p.modelWornSize) : 'NULL',
+    num(p.packageLengthMm), num(p.packageWidthMm), num(p.packageHeightMm),
   ];
   w(vals.map((v, i) => `  ${v}${i === vals.length - 1 ? '' : ','}`).join('\n'));
   w(') on conflict (slug) do update set');
@@ -294,9 +342,9 @@ for (const p of products) {
 
   // variants
   w(`delete from public.variants where product_slug = ${q(p.slug)};`);
-  w('insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values');
+  w('insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values');
   w(p.variants
-    .map((v) => `  (${q(v.sku)}, ${q(p.slug)}, ${q(v.color ?? 'Default')}, ${v.colorHex ? q(v.colorHex) : 'NULL'}, ${q(v.size ?? 'ONE')}, ${v.priceCents}, ${num(v.compareAtPriceCents)}, ${q(v.status ?? 'in-stock')}, ${num(v.quantity ?? 0)})`)
+    .map((v) => `  (${q(v.sku)}, ${q(p.slug)}, ${q(v.color ?? 'Default')}, ${v.colorHex ? q(v.colorHex) : 'NULL'}, ${q(v.size ?? 'ONE')}, ${v.priceCents}, ${num(v.compareAtPriceCents)}, ${q(v.status ?? 'in-stock')}, ${num(v.quantity ?? 0)}, ${v.barcode ? q(v.barcode) : 'NULL'})`)
     .join(',\n') + ';');
   w();
 
