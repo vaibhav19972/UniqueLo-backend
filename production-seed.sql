@@ -1,307 +1,45 @@
 -- ====================================================================
--- UniqueLo — Production Database Seed
--- Minimal Baseline: Complete Master Taxonomy + 2 Flagship Reference Products
+-- production-seed.sql — GENERATED FILE, DO NOT EDIT BY HAND
 --
--- Purpose:
---   1. Seed all foundational master tables (Universes, Motifs, Categories,
---      Garments, Collections) so that foreign key constraints, menus,
---      and catalog filters operate seamlessly.
---   2. Seed exactly 2 authentic, handcrafted showcase products (with real
---      variants, image links to disk, and complete embroidery specifications).
---   3. Keep the catalog lean and pristine so you can manually upload real
---      products one-by-one via the Admin Studio (/admin) or Supabase Table Editor.
+-- Regenerate:  node backend/scripts/gen-seed.mjs
+-- Verify:      node backend/scripts/gen-seed.mjs --check
+--
+-- Source:       web/src/data/mock-products.json
+-- Products:     3
+-- Variants:     25
+-- Price range:  Rs 1899 - Rs 3599
+-- Median var.:  Rs 3499
+--
+-- Replaces the previous hand-maintained seed, which carried 2 of 13 products
+-- and priced the hoodie at Rs 8,990 against a catalog price of Rs 3,499.
 -- ====================================================================
 
--- 0. Schema Pre-flight: Ensure modern taxonomy tables & columns exist
--- This guarantees execution succeeds even if running against an older database schema.
-CREATE TABLE IF NOT EXISTS public.universes (
-  slug text PRIMARY KEY,
-  name text NOT NULL,
-  tagline text NOT NULL,
-  lore text NOT NULL,
-  emblem_src text,
-  hero_image text,
-  drop_cadence text,
-  is_active boolean DEFAULT true,
-  order_num integer DEFAULT 0,
-  theme_tokens jsonb DEFAULT '{}'::jsonb,
-  portal_title_color text,
-  lore_heading text,
-  hero_headline text,
-  hero_headline_accent text,
-  hero_lead_color text,
-  hero_accent_color text,
-  hero_headline_case text,
-  hero_kicker text,
-  hero_ornament text,
-  hero_note text,
-  hero_vertical_text text,
-  created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+begin;
 
-CREATE TABLE IF NOT EXISTS public.motifs (
-  id text PRIMARY KEY,
-  universe_slug text REFERENCES public.universes(slug) ON DELETE CASCADE NOT NULL,
-  name text NOT NULL,
-  meaning text NOT NULL,
-  symbol_notes text,
-  ip_cleared boolean DEFAULT true,
-  created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+-- ---------------------------------------------------------------------------
+-- 1. Master taxonomy
+-- ---------------------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS public.categories (
-  slug text PRIMARY KEY,
-  name text NOT NULL,
-  label text NOT NULL,
-  description text NOT NULL,
-  image text,
-  order_num integer DEFAULT 0,
-  created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+insert into public.universes (
+  slug, name, tagline, lore, emblem_src, hero_image, drop_cadence, is_active,
+  order_num, theme_tokens, portal_title_color, lore_heading, hero_headline_case,
+  hero_vertical_text
+) values
+  ('animeverse', 'Animeverse', 'Icons. Emotions. Forever.', 'Beloved worlds, reimagined in threads. Embroidered apparel inspired by the stories that shaped a generation — from timeless classics to modern legends.', '/images/categories/tops.jpg', '/images/campaigns/hero-animeverse.jpg', 'Seasonal arcs + monthly mini-drops', true, 1, '{"bg":"#10131f","surface":"#191f36","ink":"#f4efe6","accent":"#e9b9cd","accent2":"#86d3e6","product_zone":"#f7f5f0","divider":"sakura-petal","card_frame":"torii","texture_opacity":0.06,"display_font":"condensed-bold"}'::jsonb, '#7a1f23', 'More Than Characters.', 'caps', '物語は、永遠に着られる。'),
+  ('heroverse', 'Heroverse', 'Courage lives differently here.', 'Legends, icons and everyday heroes stitched to inspire. Cosmic-scale embroidery for those who carry their own weight — and then some.', '/images/categories/outerwear.jpg', '/images/campaigns/hero-heroverse.jpg', 'Monthly New-Issue drops', true, 2, '{"bg":"#131316","surface":"#1d161a","ink":"#f5f0e8","accent":"#c0392b","accent2":"#d4af37","product_zone":"#faf6ee","divider":"action-lines","card_frame":"badge","texture_opacity":0.06,"display_font":"extra-bold-italic"}'::jsonb, '#a8862f', 'Icons Are Ideas.', 'sentence', NULL),
+  ('itihaas', 'Itihaas', 'Our history. Always relevant.', 'Moments, empires and folk stories in contemporary forms. Royal Indian craft lineages — processions, arches, jaals — embroidered for the everyday wardrobe.', '/images/categories/knitwear.jpg', '/images/campaigns/hero-itihaas.jpg', 'Festive darbar collections', true, 3, '{"bg":"#f7f3ea","surface":"#eee7d9","ink":"#2e241a","accent":"#6d1f2c","accent2":"#0e6a63","product_zone":"#faf8f5","divider":"mughal-arch","card_frame":"arch","texture_opacity":0.05,"display_font":"elegant-serif"}'::jsonb, '#6d1f2c', 'Symbols That Shaped Us.', 'sentence', 'अतीत से प्रेरणा वर्तमान के लिए।')
+on conflict (slug) do update set name = excluded.name, tagline = excluded.tagline, lore = excluded.lore, emblem_src = excluded.emblem_src, hero_image = excluded.hero_image, drop_cadence = excluded.drop_cadence, is_active = excluded.is_active, order_num = excluded.order_num, theme_tokens = excluded.theme_tokens, portal_title_color = excluded.portal_title_color, lore_heading = excluded.lore_heading, hero_headline_case = excluded.hero_headline_case, hero_vertical_text = excluded.hero_vertical_text;
 
-CREATE TABLE IF NOT EXISTS public.garments (
-  slug text PRIMARY KEY,
-  name text NOT NULL,
-  category_slug text REFERENCES public.categories(slug) ON DELETE SET NULL,
-  description text NOT NULL,
-  order_num integer DEFAULT 0,
-  created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS public.collections (
-  slug text PRIMARY KEY,
-  name text NOT NULL,
-  tagline text,
-  description text,
-  universe_slug text REFERENCES public.universes(slug) ON DELETE SET NULL,
-  cover_image text,
-  featured boolean DEFAULT true,
-  order_num integer DEFAULT 0,
-  created_at timestamptz DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- Ensure all modern columns exist on public.products
-ALTER TABLE IF EXISTS public.products
-  ADD COLUMN IF NOT EXISTS foreign_tagline text,
-  ADD COLUMN IF NOT EXISTS universe_slug text REFERENCES public.universes(slug) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS collection_slug text REFERENCES public.collections(slug) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS garment_type text REFERENCES public.garments(slug) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS gender text DEFAULT 'unisex',
-  ADD COLUMN IF NOT EXISTS motif_id text REFERENCES public.motifs(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS handcrafted boolean DEFAULT false,
-  ADD COLUMN IF NOT EXISTS expression_score smallint DEFAULT 3,
-  ADD COLUMN IF NOT EXISTS expression_slug text DEFAULT 'cult',
-  ADD COLUMN IF NOT EXISTS craft_techniques text[] DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS edits text[] DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS rating numeric(3,1) DEFAULT 5.0,
-  ADD COLUMN IF NOT EXISTS review_count integer DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS sold_count text;
-
--- Ensure RLS and public read policies exist on all taxonomy tables
-ALTER TABLE IF EXISTS public.universes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.motifs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.garments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.collections ENABLE ROW LEVEL SECURITY;
-
-DO $$
-BEGIN
-  -- 1. Public Read Policies
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'universes' AND policyname = 'Allow public read universes') THEN
-    CREATE POLICY "Allow public read universes" ON public.universes FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'motifs' AND policyname = 'Allow public read motifs') THEN
-    CREATE POLICY "Allow public read motifs" ON public.motifs FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'Allow public read categories') THEN
-    CREATE POLICY "Allow public read categories" ON public.categories FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'garments' AND policyname = 'Allow public read garments') THEN
-    CREATE POLICY "Allow public read garments" ON public.garments FOR SELECT USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow public read collections') THEN
-    CREATE POLICY "Allow public read collections" ON public.collections FOR SELECT USING (true);
-  END IF;
-
-  -- 2. Admin Studio Write Policies for taxonomy
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'universes' AND policyname = 'Allow admin insert universes') THEN
-    CREATE POLICY "Allow admin insert universes" ON public.universes FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'universes' AND policyname = 'Allow admin update universes') THEN
-    CREATE POLICY "Allow admin update universes" ON public.universes FOR UPDATE USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'motifs' AND policyname = 'Allow admin insert motifs') THEN
-    CREATE POLICY "Allow admin insert motifs" ON public.motifs FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'motifs' AND policyname = 'Allow admin update motifs') THEN
-    CREATE POLICY "Allow admin update motifs" ON public.motifs FOR UPDATE USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'Allow admin insert categories') THEN
-    CREATE POLICY "Allow admin insert categories" ON public.categories FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'Allow admin update categories') THEN
-    CREATE POLICY "Allow admin update categories" ON public.categories FOR UPDATE USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'garments' AND policyname = 'Allow admin insert garments') THEN
-    CREATE POLICY "Allow admin insert garments" ON public.garments FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'garments' AND policyname = 'Allow admin update garments') THEN
-    CREATE POLICY "Allow admin update garments" ON public.garments FOR UPDATE USING (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow admin insert collections') THEN
-    CREATE POLICY "Allow admin insert collections" ON public.collections FOR INSERT WITH CHECK (true);
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'collections' AND policyname = 'Allow admin update collections') THEN
-    CREATE POLICY "Allow admin update collections" ON public.collections FOR UPDATE USING (true);
-  END IF;
-
-  -- 3. Safely link garment_type to garments table if not already linked
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_garment_type_fkey') THEN
-    BEGIN
-      ALTER TABLE public.products
-        ADD CONSTRAINT products_garment_type_fkey
-        FOREIGN KEY (garment_type) REFERENCES public.garments(slug) ON DELETE SET NULL NOT VALID;
-    EXCEPTION
-      WHEN others THEN NULL;
-    END;
-  END IF;
-END $$;
-
-
--- --------------------------------------------------------------------
--- 1. Master Universes (Brand Pillars & Thematic Worlds)
--- --------------------------------------------------------------------
-INSERT INTO public.universes (
-  slug, name, tagline, lore, emblem_src, hero_image, drop_cadence, is_active, order_num, theme_tokens,
-  portal_title_color, lore_heading, hero_headline, hero_headline_accent, hero_lead_color, hero_accent_color,
-  hero_headline_case, hero_kicker, hero_ornament, hero_note, hero_vertical_text
-) VALUES (
-  'animeverse',
-  'Animeverse',
-  'Icons. Emotions. Forever.',
-  'Beloved worlds, reimagined in threads. Embroidered apparel inspired by the stories that shaped a generation — from timeless classics to modern legends.',
-  '/images/categories/tops.jpg',
-  '/images/campaigns/hero-animeverse.jpg',
-  'Seasonal arcs + monthly mini-drops',
-  true,
-  1,
-  '{"bg":"#10131f","surface":"#191f36","ink":"#f4efe6","accent":"#e9b9cd","accent2":"#86d3e6","product_zone":"#f7f5f0","divider":"sakura-petal","card_frame":"torii","texture_opacity":0.06,"display_font":"condensed-bold"}'::jsonb,
-  '#7a1f23',
-  'More Than Characters.',
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  'caps',
-  '動 漫',
-  NULL,
-  NULL,
-  '物語は、永遠に着られる。'
-) ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  tagline = EXCLUDED.tagline,
-  lore = EXCLUDED.lore,
-  hero_image = EXCLUDED.hero_image,
-  theme_tokens = EXCLUDED.theme_tokens;
-
-INSERT INTO public.universes (
-  slug, name, tagline, lore, emblem_src, hero_image, drop_cadence, is_active, order_num, theme_tokens,
-  portal_title_color, lore_heading, hero_headline, hero_headline_accent, hero_lead_color, hero_accent_color,
-  hero_headline_case, hero_kicker, hero_ornament, hero_note, hero_vertical_text
-) VALUES (
-  'heroverse',
-  'Heroverse',
-  'Courage lives differently here.',
-  'Legends, icons and everyday heroes stitched to inspire. Cosmic-scale embroidery for those who carry their own weight — and then some.',
-  '/images/categories/outerwear.jpg',
-  '/images/campaigns/hero-heroverse.jpg',
-  'Monthly New-Issue drops',
-  true,
-  2,
-  '{"bg":"#131316","surface":"#1d161a","ink":"#f5f0e8","accent":"#c0392b","accent2":"#d4af37","product_zone":"#faf6ee","divider":"action-lines","card_frame":"badge","texture_opacity":0.06,"display_font":"extra-bold-italic"}'::jsonb,
-  '#a8862f',
-  'Icons Are Ideas.',
-  'Extraordinary Lives Ahead.',
-  'Extraordinary',
-  NULL,
-  '#d4af37',
-  'sentence',
-  NULL,
-  'compass',
-  'Same people. Brighter versions.',
-  NULL
-) ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  tagline = EXCLUDED.tagline,
-  lore = EXCLUDED.lore,
-  hero_image = EXCLUDED.hero_image,
-  theme_tokens = EXCLUDED.theme_tokens;
-
-INSERT INTO public.universes (
-  slug, name, tagline, lore, emblem_src, hero_image, drop_cadence, is_active, order_num, theme_tokens,
-  portal_title_color, lore_heading, hero_headline, hero_headline_accent, hero_lead_color, hero_accent_color,
-  hero_headline_case, hero_kicker, hero_ornament, hero_note, hero_vertical_text
-) VALUES (
-  'itihaas',
-  'Itihaas',
-  'Our history. Always relevant.',
-  'Moments, empires and folk stories in contemporary forms. Royal Indian craft lineages — processions, arches, jaals — embroidered for the everyday wardrobe.',
-  '/images/categories/knitwear.jpg',
-  '/images/campaigns/hero-itihaas.jpg',
-  'Festive darbar collections',
-  true,
-  3,
-  '{"bg":"#f7f3ea","surface":"#eee7d9","ink":"#2e241a","accent":"#6d1f2c","accent2":"#0e6a63","product_zone":"#faf8f5","divider":"mughal-arch","card_frame":"arch","texture_opacity":0.05,"display_font":"elegant-serif"}'::jsonb,
-  '#6d1f2c',
-  'Symbols That Shaped Us.',
-  'Threads of a Brighter Bharat.',
-  'Bharat.',
-  '#2e241a',
-  '#6d1f2c',
-  'sentence',
-  NULL,
-  'lotus',
-  NULL,
-  'अतीत से प्रेरणा वर्तमान के लिए।'
-) ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  tagline = EXCLUDED.tagline,
-  lore = EXCLUDED.lore,
-  hero_image = EXCLUDED.hero_image,
-  theme_tokens = EXCLUDED.theme_tokens;
-
--- --------------------------------------------------------------------
--- 2. IP-Cleared Motifs
--- --------------------------------------------------------------------
-INSERT INTO public.motifs (id, universe_slug, name, meaning, symbol_notes, ip_cleared) VALUES
-  ('red-sun', 'animeverse', 'The Red Sun', 'A symbol of hope, resilience and new beginnings.', 'Flat crimson disc, minimal, pairs with mountain/wave linework.', true),
-  ('koi', 'animeverse', 'The Koi', 'Perseverance through every current.', 'Swimming koi with wave curls, dynamic diagonal flow.', true),
-  ('sakura', 'animeverse', 'Sakura', 'Beauty in impermanence, strength in renewal.', 'Five-petal blossoms on bare branches, scattered petals.', true),
-  ('ascendant-crest', 'heroverse', 'The Ascendant Crest', 'Rise, carry, protect — the everyday hero''s mark.', 'Bold shield-crest geometry, gold on deep red.', true),
-  ('guardian-stripes', 'heroverse', 'Guardian Stripes', 'Speed lines of those who show up first.', 'Diagonal action-line bands, navy and burst yellow.', true),
-  ('procession-elephant', 'itihaas', 'The Royal Procession', 'Ceremony, memory and rightful pride.', 'Caparisoned elephant with arch-and-jaal backdrop.', true),
-  ('arch-jaal', 'itihaas', 'Arch Jaal', 'Courtyards of patience — geometry as devotion.', 'Mughal arch lattice, symmetric, gold on maroon.', true)
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  meaning = EXCLUDED.meaning;
-
--- --------------------------------------------------------------------
--- 3. Categories Table
--- --------------------------------------------------------------------
-INSERT INTO public.categories (slug, name, label, description, image, order_num) VALUES
+insert into public.categories (slug, name, label, description, image, order_num) values
+  ('all', 'All Collections', 'All', 'The complete atelier edit spanning artisanal embroidery, heirloom tailoring, and pure natural yarns.', NULL, 0),
   ('outerwear', 'Outerwear', 'Outerwear', 'Tailored chore jackets, kimono overcoats, and embroidered denim outerwear.', '/images/categories/outerwear.jpg', 1),
   ('knitwear', 'Knitwear', 'Knitwear', 'Pure cashmere cardigans, merino sweaters, and chain-stitched crewnecks.', '/images/categories/knitwear.jpg', 2),
   ('tops', 'Tops & Shirts', 'Tops', 'Heavyweight organic cotton box tees, silk-floss oxfords, and band-collar tunics.', '/images/categories/tops.jpg', 3),
   ('bottoms', 'Bottoms', 'Bottoms', 'Pleated wide-leg trousers, raw selvedge denim, and kantha-embroidered work pants.', '/images/categories/bottoms.jpg', 4),
   ('accessories', 'Accessories', 'Accessories', 'Embroidered silk scarves, raw canvas tote bags, and heirloom monogram badges.', '/images/categories/accessories.jpg', 5)
-ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  description = EXCLUDED.description;
+on conflict (slug) do update set name = excluded.name, label = excluded.label, description = excluded.description, image = excluded.image, order_num = excluded.order_num;
 
--- --------------------------------------------------------------------
--- 4. Garments Table (Silhouette Taxonomy)
--- --------------------------------------------------------------------
-INSERT INTO public.garments (slug, name, category_slug, description, order_num) VALUES
+insert into public.garments (slug, name, category_slug, description, order_num) values
   ('hoodie', 'Hoodies', 'tops', 'Heavyweight fleece hoodies with back-panel and crest embroidery.', 1),
   ('tee', 'Tees', 'tops', 'Combed-cotton tees carrying chest and back threadwork.', 2),
   ('shirt', 'Shirts', 'tops', 'Oxfords, poplins and band-collar tunics with monogram detail.', 3),
@@ -311,44 +49,71 @@ INSERT INTO public.garments (slug, name, category_slug, description, order_num) 
   ('pants', 'Pants', 'bottoms', 'Selvedge denim and work pants with structural stitching.', 7),
   ('scarf', 'Scarves', 'accessories', 'Silk scarves with arch-jaal and flora borders.', 8),
   ('tote', 'Totes', 'accessories', 'Raw-canvas totes with sun-disc and motif hits.', 9)
-ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  category_slug = EXCLUDED.category_slug,
-  description = EXCLUDED.description,
-  order_num = EXCLUDED.order_num;
+on conflict (slug) do update set name = excluded.name, category_slug = excluded.category_slug, description = excluded.description, order_num = excluded.order_num;
 
--- --------------------------------------------------------------------
--- 5. Collections Table (Seasonal Drops & Thematic Capsules)
--- --------------------------------------------------------------------
-INSERT INTO public.collections (slug, name, tagline, description, universe_slug, featured, order_num) VALUES
-  ('spring-sakura', 'Spring Sakura Collection', 'Japanese woodblock waves, blossom scatter, ink-line calm.', 'Inspired by spring in the floating world — flat sun discs, wave curls, and floating cherry blossom embroidery.', 'animeverse', true, 1),
-  ('royal-heritage', 'Royal Heritage Collection', 'Arches, jaals and royal court processions in gold zardozi.', 'Arch lattices, elephant processions, and intricate jaal geometry drawn from royal court lineages.', 'itihaas', true, 2),
-  ('midnight-atelier', 'Midnight Atelier Collection', 'No world, just pure cloth, heroic crests, and tonal needlecraft.', 'Universe-neutral and nocturnal luxury pieces — sashiko grids, crewel relief, comic noir geometry, and understated crest detailing.', NULL, true, 3)
-ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  tagline = EXCLUDED.tagline,
-  description = EXCLUDED.description,
-  universe_slug = EXCLUDED.universe_slug,
-  featured = EXCLUDED.featured,
-  order_num = EXCLUDED.order_num;
+insert into public.collections (slug, name, tagline, description, universe_slug, featured, order_num) values
+  ('spring-sakura', 'Spring Sakura Collection', 'Japanese woodblock waves, blossom scatter, ink-line calm.', 'Inspired by spring in the floating world — flat sun discs, wave curls, and floating cherry blossom embroidery across heavyweight fleece, combed cotton, and raw canvas.', 'animeverse', true, 1),
+  ('royal-heritage', 'Royal Heritage Collection', 'Arches, jaals and royal court processions in gold zardozi.', 'Arch lattices, elephant processions, and intricate jaal geometry drawn from royal court lineages, rendered in metallic zari, raw silk, and fine needlework.', 'itihaas', true, 2),
+  ('midnight-atelier', 'Midnight Atelier Collection', 'No world, just pure cloth, heroic crests, and tonal needlecraft.', 'Universe-neutral and nocturnal luxury pieces — sashiko grids, crewel relief, comic noir geometry, and understated crest detailing on heavyweight unbleached and charcoal yarns.', NULL, true, 3)
+on conflict (slug) do update set name = excluded.name, tagline = excluded.tagline, description = excluded.description, universe_slug = excluded.universe_slug, featured = excluded.featured, order_num = excluded.order_num;
 
--- --------------------------------------------------------------------
--- 6. Flagship Showcase Products (Exactly 2 Handcrafted SKUs, is_mock = false)
--- --------------------------------------------------------------------
+insert into public.motifs (id, universe_slug, name, meaning, symbol_notes, ip_cleared) values
+  ('red-sun', 'animeverse', 'The Red Sun', 'A symbol of hope, resilience and new beginnings.', 'Flat crimson disc, minimal, pairs with mountain/wave linework.', true),
+  ('koi', 'animeverse', 'The Koi', 'Perseverance through every current.', 'Swimming koi with wave curls, dynamic diagonal flow.', true),
+  ('sakura', 'animeverse', 'Sakura', 'Beauty in impermanence, strength in renewal.', 'Five-petal blossoms on bare branches, scattered petals.', true),
+  ('ascendant-crest', 'heroverse', 'The Ascendant Crest', 'Rise, carry, protect — the everyday hero''s mark.', 'Bold shield-crest geometry, gold on deep red.', true),
+  ('guardian-stripes', 'heroverse', 'Guardian Stripes', 'Speed lines of those who show up first.', 'Diagonal action-line bands, navy and burst yellow.', true),
+  ('procession-elephant', 'itihaas', 'The Royal Procession', 'Ceremony, memory and rightful pride.', 'Caparisoned elephant with arch-and-jaal backdrop.', true),
+  ('arch-jaal', 'itihaas', 'Arch Jaal', 'Courtyards of patience — geometry as devotion.', 'Mughal arch lattice, symmetric, gold on maroon.', true)
+on conflict (id) do update set universe_slug = excluded.universe_slug, name = excluded.name, meaning = excluded.meaning, symbol_notes = excluded.symbol_notes, ip_cleared = excluded.ip_cleared;
 
--- Product 1: Sakura Ronin Heavyweight Hoodie (Animeverse · Tops/Hoodie)
-INSERT INTO public.products (
-  slug, name, subtitle, foreign_tagline, description, category_slug, universe_slug,
-  collection_slug, garment_type, gender, motif_id, handcrafted,
-  craft_techniques, edits, expression_score, expression_slug,
-  rating, review_count, sold_count, tags, featured, customizable,
-  material, care, fit, batch_number, batch_total, craft_region, craft_cluster, fabric_gsm
-) VALUES (
+-- ---------------------------------------------------------------------------
+-- 2. Products
+-- ---------------------------------------------------------------------------
+
+-- Sakura Ronin Hoodie  (animeverse · tops/hoodie)
+insert into public.products (
+  slug,
+  name,
+  subtitle,
+  foreign_tagline,
+  description,
+  category_slug,
+  universe_slug,
+  collection_slug,
+  garment_type,
+  gender,
+  motif_id,
+  handcrafted,
+  craft_techniques,
+  edits,
+  expression_score,
+  rating,
+  review_count,
+  tags,
+  featured,
+  customizable,
+  material,
+  care,
+  fit,
+  fabric_gsm,
+  country_of_origin,
+  manufacturer_name,
+  manufacturer_address,
+  packed_by,
+  cod_available,
+  delivery_days_min,
+  delivery_days_max,
+  return_window_days,
+  weight_grams,
+  hsn_code,
+  size_chart
+) values (
   'sakura-ronin-hoodie',
-  'Sakura Ronin Heavyweight Hoodie',
-  '450 GSM fleece with high-density back-panel cherry blossom embroidery',
+  'Sakura Ronin Hoodie',
+  'A lone journey, a blossoming hope.',
   '桜の浪人',
-  'An artisanal heavyweight hoodie combining structured boxy streetwear silhouettes with authentic floating-world needlework. Features 48,000 stitches of high-relief silk-poly thread across the back yoke and left chest crest.',
+  'Oversized hoodie carrying the Sakura Ronin — a wandering swordsman beneath falling cherry blossoms. Embroidered zardozi and layered threadwork across the back panel.',
   'tops',
   'animeverse',
   'spring-sakura',
@@ -356,213 +121,364 @@ INSERT INTO public.products (
   'unisex',
   'sakura',
   true,
-  ARRAY['high-relief-fill', 'satin-stitch'],
-  ARRAY['cherry-blossom', 'street-atelier'],
-  3,
-  'cult',
-  4.9,
-  18,
-  '80+',
-  ARRAY['hoodie', 'embroidery', 'animeverse', 'sakura', 'heavyweight'],
+  ARRAY['hand-zardozi'],
+  ARRAY['statement', 'everyday'],
+  5,
+  4.8,
+  320,
+  ARRAY['animeverse', 'hoodie', 'unisex', 'bestseller'],
   true,
+  false,
+  ARRAY['400 GSM cotton fleece', 'Brass drawcord tips'],
+  '{}',
+  'Oversized Fit',
+  '380 GSM',
+  'IN',
+  NULL,
+  NULL,
+  NULL,
   true,
-  ARRAY['100% GOTS Combed Cotton Fleece (450 GSM)', 'Japanese Rayon & Silk-poly threads'],
-  ARRAY['Machine wash cold inside out on gentle cycle', 'Dry flat in shade', 'Do not iron directly over embroidery'],
-  'Relaxed dropped-shoulder atelier fit',
-  1,
-  50,
-  'Kyoto & Tirupur Guild',
-  'Master Needlecraft Studio',
-  '450 GSM'
-) ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  subtitle = EXCLUDED.subtitle,
-  foreign_tagline = EXCLUDED.foreign_tagline,
-  description = EXCLUDED.description,
-  category_slug = EXCLUDED.category_slug,
-  universe_slug = EXCLUDED.universe_slug,
-  collection_slug = EXCLUDED.collection_slug,
-  garment_type = EXCLUDED.garment_type,
-  gender = EXCLUDED.gender,
-  motif_id = EXCLUDED.motif_id,
-  handcrafted = EXCLUDED.handcrafted,
-  craft_techniques = EXCLUDED.craft_techniques,
-  edits = EXCLUDED.edits,
-  expression_score = EXCLUDED.expression_score,
-  expression_slug = EXCLUDED.expression_slug,
-  rating = EXCLUDED.rating,
-  review_count = EXCLUDED.review_count,
-  sold_count = EXCLUDED.sold_count,
-  tags = EXCLUDED.tags,
-  featured = EXCLUDED.featured,
-  customizable = EXCLUDED.customizable;
+  5,
+  7,
+  7,
+  650,
+  '6109',
+  '{"S":{"chest":100,"length":66},"M":{"chest":105,"length":68},"L":{"chest":110,"length":70},"XL":{"chest":115,"length":72}}'::jsonb
+) on conflict (slug) do update set
+  name = excluded.name,
+  subtitle = excluded.subtitle,
+  foreign_tagline = excluded.foreign_tagline,
+  description = excluded.description,
+  category_slug = excluded.category_slug,
+  universe_slug = excluded.universe_slug,
+  collection_slug = excluded.collection_slug,
+  garment_type = excluded.garment_type,
+  gender = excluded.gender,
+  motif_id = excluded.motif_id,
+  handcrafted = excluded.handcrafted,
+  craft_techniques = excluded.craft_techniques,
+  edits = excluded.edits,
+  expression_score = excluded.expression_score,
+  rating = excluded.rating,
+  review_count = excluded.review_count,
+  tags = excluded.tags,
+  featured = excluded.featured,
+  customizable = excluded.customizable,
+  material = excluded.material,
+  care = excluded.care,
+  fit = excluded.fit,
+  fabric_gsm = excluded.fabric_gsm,
+  country_of_origin = excluded.country_of_origin,
+  manufacturer_name = excluded.manufacturer_name,
+  manufacturer_address = excluded.manufacturer_address,
+  packed_by = excluded.packed_by,
+  cod_available = excluded.cod_available,
+  delivery_days_min = excluded.delivery_days_min,
+  delivery_days_max = excluded.delivery_days_max,
+  return_window_days = excluded.return_window_days,
+  weight_grams = excluded.weight_grams,
+  hsn_code = excluded.hsn_code,
+  size_chart = excluded.size_chart;
 
--- Product 1 Images
-DELETE FROM public.product_images WHERE product_slug = 'sakura-ronin-hoodie';
-INSERT INTO public.product_images (product_slug, src, alt, color, sort_order) VALUES
-  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-1.jpg', 'Sakura Ronin Heavyweight Hoodie — front view', '#1a191b', 0),
-  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-2.jpg', 'Sakura Ronin Heavyweight Hoodie — back embroidery panel', '#1a191b', 1),
-  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-3.jpg', 'Sakura Ronin Heavyweight Hoodie — macro stitch detail', '#1a191b', 2),
-  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-4.jpg', 'Sakura Ronin Heavyweight Hoodie — cuff and silhouette detail', '#1a191b', 3);
+delete from public.product_images where product_slug = 'sakura-ronin-hoodie';
+insert into public.product_images (product_slug, src, alt, color, sort_order) values
+  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-1.jpg', 'Sakura Ronin Hoodie — front', NULL, 0),
+  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-2.jpg', 'Sakura Ronin Hoodie — back panel embroidery', NULL, 1),
+  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-3.jpg', 'Sakura Ronin Hoodie — stitch detail', NULL, 2),
+  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-4.jpg', 'Sakura Ronin Hoodie — lifestyle', NULL, 3),
+  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-5.jpg', 'Sakura Ronin Hoodie — collar detail', NULL, 4),
+  ('sakura-ronin-hoodie', '/images/products/sakura-ronin-hoodie-6.jpg', 'Sakura Ronin Hoodie — lifestyle shot', NULL, 5);
 
--- Product 1 Variants
-DELETE FROM public.variants WHERE product_slug = 'sakura-ronin-hoodie';
-INSERT INTO public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) VALUES
-  ('UNI-SRH-BLK-S', 'sakura-ronin-hoodie', 'Washed Charcoal', '#1a191b', 'S', 899000, 1050000, 'in-stock', 12),
-  ('UNI-SRH-BLK-M', 'sakura-ronin-hoodie', 'Washed Charcoal', '#1a191b', 'M', 899000, 1050000, 'in-stock', 18),
-  ('UNI-SRH-BLK-L', 'sakura-ronin-hoodie', 'Washed Charcoal', '#1a191b', 'L', 899000, 1050000, 'in-stock', 15),
-  ('UNI-SRH-BLK-XL', 'sakura-ronin-hoodie', 'Washed Charcoal', '#1a191b', 'XL', 899000, 1050000, 'low-stock', 5);
+delete from public.variants where product_slug = 'sakura-ronin-hoodie';
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values
+  ('SRH-WARM-XS', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'XS', 349900, NULL, 'in-stock', 14),
+  ('SRH-WARM-S', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'S', 349900, NULL, 'in-stock', 14),
+  ('SRH-WARM-M', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'M', 349900, NULL, 'low-stock', 2),
+  ('SRH-WARM-L', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'L', 349900, NULL, 'in-stock', 14),
+  ('SRH-WARM-XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', 'XL', 349900, NULL, 'in-stock', 14),
+  ('SRH-WARM-2XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', '2XL', 349900, NULL, 'in-stock', 14),
+  ('SRH-WARM-3XL', 'sakura-ronin-hoodie', 'Warm Ivory', '#f3ede2', '3XL', 349900, NULL, 'low-stock', 2),
+  ('SRH-MIDNIGHT-S', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'S', 349900, NULL, 'in-stock', 9),
+  ('SRH-MIDNIGHT-M', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'M', 349900, NULL, 'in-stock', 9),
+  ('SRH-MIDNIGHT-L', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'L', 349900, NULL, 'in-stock', 9),
+  ('SRH-MIDNIGHT-XL', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', 'XL', 349900, NULL, 'in-stock', 9),
+  ('SRH-MIDNIGHT-2XL', 'sakura-ronin-hoodie', 'Midnight Ink', '#1c1c24', '2XL', 349900, NULL, 'in-stock', 9);
 
--- Product 1 Embroidery Specification
-DELETE FROM public.embroidery_details WHERE product_slug = 'sakura-ronin-hoodie';
-INSERT INTO public.embroidery_details (
+delete from public.embroidery_details where product_slug = 'sakura-ronin-hoodie';
+insert into public.embroidery_details (
   product_slug, technique, technique_label, artisan_hours, placement,
   thread_composition, motif_story, macro_image_src, macro_image_alt
-) VALUES (
-  'sakura-ronin-hoodie',
-  'high-density-fill',
-  'High-Density Threadwork',
-  14,
-  ARRAY['Center Back Full Panel', 'Left Chest Crest'],
-  '100% Japanese Rayon & High-Luster Silk-Poly',
-  'The Sakura blossom signifies resilience and the beauty of fleeting moments, stitched in graduated pastel pink and gold filaments across 48,000 distinct punctures.',
-  '/images/products/sakura-ronin-hoodie-3.jpg',
-  'Macro close-up of Sakura needlework'
+) values (
+  'sakura-ronin-hoodie', 'hand-zardozi', 'Hand Zardozi', 40,
+  ARRAY['back panel', 'sleeves'], 'Silk floss, gilded bullion wire', 'The ronin walks beneath blossoms that fall faster than he moves — beauty and transience stitched at 40 hours.',
+  '/images/products/sakura-ronin-hoodie-5.jpg', 'Sakura Ronin zardozi macro'
 );
 
--- Product 1 Verified Review
-DELETE FROM public.reviews WHERE product_slug = 'sakura-ronin-hoodie';
-INSERT INTO public.reviews (product_slug, author, rating, title, comment, verified) VALUES (
-  'sakura-ronin-hoodie',
-  'Aditya S.',
+-- Guardian Stripes Pullover  (heroverse · tops/hoodie)
+insert into public.products (
+  slug,
+  name,
+  subtitle,
+  foreign_tagline,
+  description,
+  category_slug,
+  universe_slug,
+  collection_slug,
+  garment_type,
+  gender,
+  motif_id,
+  handcrafted,
+  craft_techniques,
+  edits,
+  expression_score,
+  rating,
+  review_count,
+  tags,
+  featured,
+  customizable,
+  material,
+  care,
+  fit,
+  fabric_gsm,
+  country_of_origin,
+  manufacturer_name,
+  manufacturer_address,
+  packed_by,
+  cod_available,
+  delivery_days_min,
+  delivery_days_max,
+  return_window_days,
+  weight_grams,
+  hsn_code,
+  size_chart
+) values (
+  'guardian-stripes-pullover',
+  'Guardian Stripes Pullover',
+  'Speed lines of those who show up first.',
+  NULL,
+  'Loopback crewneck pullover with Guardian Stripes running diagonal across the chest — navy bands and burst-yellow knots in structural sashiko grid.',
+  'tops',
+  'heroverse',
+  'midnight-atelier',
+  'hoodie',
+  'unisex',
+  'guardian-stripes',
+  true,
+  ARRAY['sashiko-selvedge'],
+  ARRAY['statement', 'everyday'],
+  3,
+  4.7,
+  68,
+  ARRAY['heroverse', 'hoodie', 'unisex'],
+  false,
+  false,
+  ARRAY['340 GSM loopback cotton'],
+  '{}',
+  'Relaxed Fit',
+  '340 GSM',
+  'IN',
+  NULL,
+  NULL,
+  NULL,
+  true,
   5,
-  'Unrivaled drape and embroidery weight',
-  'The stitch density on the back panel is astonishing in person. Fabric is thick, structured, and holds shape perfectly.',
-  true
+  7,
+  7,
+  700,
+  '6110',
+  '{"S":{"chest":102,"length":67},"M":{"chest":107,"length":69},"L":{"chest":112,"length":71},"XL":{"chest":117,"length":73}}'::jsonb
+) on conflict (slug) do update set
+  name = excluded.name,
+  subtitle = excluded.subtitle,
+  foreign_tagline = excluded.foreign_tagline,
+  description = excluded.description,
+  category_slug = excluded.category_slug,
+  universe_slug = excluded.universe_slug,
+  collection_slug = excluded.collection_slug,
+  garment_type = excluded.garment_type,
+  gender = excluded.gender,
+  motif_id = excluded.motif_id,
+  handcrafted = excluded.handcrafted,
+  craft_techniques = excluded.craft_techniques,
+  edits = excluded.edits,
+  expression_score = excluded.expression_score,
+  rating = excluded.rating,
+  review_count = excluded.review_count,
+  tags = excluded.tags,
+  featured = excluded.featured,
+  customizable = excluded.customizable,
+  material = excluded.material,
+  care = excluded.care,
+  fit = excluded.fit,
+  fabric_gsm = excluded.fabric_gsm,
+  country_of_origin = excluded.country_of_origin,
+  manufacturer_name = excluded.manufacturer_name,
+  manufacturer_address = excluded.manufacturer_address,
+  packed_by = excluded.packed_by,
+  cod_available = excluded.cod_available,
+  delivery_days_min = excluded.delivery_days_min,
+  delivery_days_max = excluded.delivery_days_max,
+  return_window_days = excluded.return_window_days,
+  weight_grams = excluded.weight_grams,
+  hsn_code = excluded.hsn_code,
+  size_chart = excluded.size_chart;
+
+delete from public.product_images where product_slug = 'guardian-stripes-pullover';
+insert into public.product_images (product_slug, src, alt, color, sort_order) values
+  ('guardian-stripes-pullover', '/images/products/kantha-chore-jacket-1.jpg', 'Guardian Stripes Pullover — front', NULL, 0),
+  ('guardian-stripes-pullover', '/images/products/sashiko-selvedge-denim-1.jpg', 'Guardian Stripes Pullover — stripe macro', NULL, 1);
+
+delete from public.variants where product_slug = 'guardian-stripes-pullover';
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values
+  ('GSP-NAVY-XS', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'XS', 359900, NULL, 'in-stock', 14),
+  ('GSP-NAVY-S', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'S', 359900, NULL, 'in-stock', 14),
+  ('GSP-NAVY-M', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'M', 359900, NULL, 'in-stock', 14),
+  ('GSP-NAVY-L', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'L', 359900, NULL, 'in-stock', 14),
+  ('GSP-NAVY-XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', 'XL', 359900, NULL, 'in-stock', 14),
+  ('GSP-NAVY-2XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', '2XL', 359900, NULL, 'in-stock', 14),
+  ('GSP-NAVY-3XL', 'guardian-stripes-pullover', 'Navy Surge', '#25314d', '3XL', 359900, NULL, 'in-stock', 14),
+  ('GSP-STORM-S', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'S', 359900, NULL, 'in-stock', 9),
+  ('GSP-STORM-M', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'M', 359900, NULL, 'in-stock', 9),
+  ('GSP-STORM-L', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'L', 359900, NULL, 'in-stock', 9),
+  ('GSP-STORM-XL', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', 'XL', 359900, NULL, 'in-stock', 9),
+  ('GSP-STORM-2XL', 'guardian-stripes-pullover', 'Storm Grey', '#6b6f76', '2XL', 359900, NULL, 'in-stock', 9);
+
+delete from public.embroidery_details where product_slug = 'guardian-stripes-pullover';
+insert into public.embroidery_details (
+  product_slug, technique, technique_label, artisan_hours, placement,
+  thread_composition, motif_story, macro_image_src, macro_image_alt
+) values (
+  'guardian-stripes-pullover', 'sashiko-selvedge', 'Sashiko Selvedge', 16,
+  ARRAY['chest', 'cuffs'], 'White cotton thread, burst-yellow accent', 'Diagonal action-line bands — the geometry of first responders.',
+  '/images/products/sashiko-selvedge-denim-2.jpg', 'Guardian stripes sashiko macro'
 );
 
-
--- Product 2: Heritage Kantha Stitch Chore Jacket (Itihaas · Outerwear/Jacket)
-INSERT INTO public.products (
-  slug, name, subtitle, foreign_tagline, description, category_slug, universe_slug,
-  collection_slug, garment_type, gender, motif_id, handcrafted,
-  craft_techniques, edits, expression_score, expression_slug,
-  rating, review_count, sold_count, tags, featured, customizable,
-  material, care, fit, batch_number, batch_total, craft_region, craft_cluster, fabric_gsm
-) VALUES (
-  'kantha-chore-jacket',
-  'Heritage Kantha Stitch Chore Jacket',
-  'Hand-stitched running kantha threads on 14oz raw selvedge canvas',
-  'कांथा शिल्प',
-  'A timeless chore silhouette tailored from unbleached organic canvas and layered with Bengal running-stitch Kantha embroidery along the pocket flaps, collar points, and back yoke.',
-  'outerwear',
+-- Arch Jaal Silk Scarf  (itihaas · accessories/scarf)
+insert into public.products (
+  slug,
+  name,
+  subtitle,
+  foreign_tagline,
+  description,
+  category_slug,
+  universe_slug,
+  collection_slug,
+  garment_type,
+  gender,
+  motif_id,
+  handcrafted,
+  craft_techniques,
+  edits,
+  expression_score,
+  rating,
+  review_count,
+  tags,
+  featured,
+  customizable,
+  material,
+  care,
+  fit,
+  fabric_gsm,
+  country_of_origin,
+  manufacturer_name,
+  manufacturer_address,
+  packed_by,
+  cod_available,
+  delivery_days_min,
+  delivery_days_max,
+  return_window_days,
+  weight_grams,
+  hsn_code,
+  size_chart
+) values (
+  'arch-jaal-scarf',
+  'Arch Jaal Silk Scarf',
+  'Courtyards of patience — geometry as devotion.',
+  NULL,
+  'Mulberry silk scarf with the Arch Jaal lattice worked in tonal gold — Mughal geometry held to a whisper.',
+  'accessories',
   'itihaas',
   'royal-heritage',
-  'jacket',
+  'scarf',
   'unisex',
   'arch-jaal',
   true,
-  ARRAY['kantha-running-stitch', 'zari-relief'],
-  ARRAY['heritage', 'quiet-luxury'],
+  ARRAY['metallic-zari'],
+  ARRAY['heritage', 'festive-gifting'],
   2,
-  'understated',
-  5.0,
-  12,
-  '45+',
-  ARRAY['jacket', 'chore', 'kantha', 'itihaas', 'outerwear', 'handcrafted'],
-  true,
+  4.8,
+  33,
+  ARRAY['itihaas', 'accessories', 'unisex'],
   false,
-  ARRAY['100% Unbleached Heavy Cotton Canvas (380 GSM)', 'Wild Tussar Silk Floss'],
-  ARRAY['Dry clean recommended for first 2 washes', 'Cold hand wash with mild eco-detergent', 'Line dry in shade'],
-  'Structured atelier utility cut, boxy drape',
-  1,
-  35,
-  'Santiniketan, West Bengal',
-  'Bengal Artisan Guild',
-  '380 GSM'
-) ON CONFLICT (slug) DO UPDATE SET
-  name = EXCLUDED.name,
-  subtitle = EXCLUDED.subtitle,
-  foreign_tagline = EXCLUDED.foreign_tagline,
-  description = EXCLUDED.description,
-  category_slug = EXCLUDED.category_slug,
-  universe_slug = EXCLUDED.universe_slug,
-  collection_slug = EXCLUDED.collection_slug,
-  garment_type = EXCLUDED.garment_type,
-  gender = EXCLUDED.gender,
-  motif_id = EXCLUDED.motif_id,
-  handcrafted = EXCLUDED.handcrafted,
-  craft_techniques = EXCLUDED.craft_techniques,
-  edits = EXCLUDED.edits,
-  expression_score = EXCLUDED.expression_score,
-  expression_slug = EXCLUDED.expression_slug,
-  rating = EXCLUDED.rating,
-  review_count = EXCLUDED.review_count,
-  sold_count = EXCLUDED.sold_count,
-  tags = EXCLUDED.tags,
-  featured = EXCLUDED.featured,
-  customizable = EXCLUDED.customizable;
+  false,
+  ARRAY['18 Momme Mulberry Silk Twill'],
+  '{}',
+  'One Size',
+  '18 momme silk',
+  'IN',
+  NULL,
+  NULL,
+  NULL,
+  true,
+  4,
+  6,
+  7,
+  180,
+  '6214',
+  '{"ONE":{"length":180,"width":70}}'::jsonb
+) on conflict (slug) do update set
+  name = excluded.name,
+  subtitle = excluded.subtitle,
+  foreign_tagline = excluded.foreign_tagline,
+  description = excluded.description,
+  category_slug = excluded.category_slug,
+  universe_slug = excluded.universe_slug,
+  collection_slug = excluded.collection_slug,
+  garment_type = excluded.garment_type,
+  gender = excluded.gender,
+  motif_id = excluded.motif_id,
+  handcrafted = excluded.handcrafted,
+  craft_techniques = excluded.craft_techniques,
+  edits = excluded.edits,
+  expression_score = excluded.expression_score,
+  rating = excluded.rating,
+  review_count = excluded.review_count,
+  tags = excluded.tags,
+  featured = excluded.featured,
+  customizable = excluded.customizable,
+  material = excluded.material,
+  care = excluded.care,
+  fit = excluded.fit,
+  fabric_gsm = excluded.fabric_gsm,
+  country_of_origin = excluded.country_of_origin,
+  manufacturer_name = excluded.manufacturer_name,
+  manufacturer_address = excluded.manufacturer_address,
+  packed_by = excluded.packed_by,
+  cod_available = excluded.cod_available,
+  delivery_days_min = excluded.delivery_days_min,
+  delivery_days_max = excluded.delivery_days_max,
+  return_window_days = excluded.return_window_days,
+  weight_grams = excluded.weight_grams,
+  hsn_code = excluded.hsn_code,
+  size_chart = excluded.size_chart;
 
--- Product 2 Images
-DELETE FROM public.product_images WHERE product_slug = 'kantha-chore-jacket';
-INSERT INTO public.product_images (product_slug, src, alt, color, sort_order) VALUES
-  ('kantha-chore-jacket', '/images/products/kantha-chore-jacket-1.jpg', 'Heritage Kantha Stitch Chore Jacket — front view', '#ece6d9', 0),
-  ('kantha-chore-jacket', '/images/products/kantha-chore-jacket-2.jpg', 'Heritage Kantha Stitch Chore Jacket — craft detail & embroidery', '#ece6d9', 1);
+delete from public.product_images where product_slug = 'arch-jaal-scarf';
+insert into public.product_images (product_slug, src, alt, color, sort_order) values
+  ('arch-jaal-scarf', '/images/products/embroidered-silk-scarf-2.jpg', 'Arch Jaal Silk Scarf — drape', NULL, 0),
+  ('arch-jaal-scarf', '/images/products/embroidered-silk-scarf-1.jpg', 'Arch Jaal Silk Scarf — lattice macro', NULL, 1);
 
--- Product 2 Variants
-DELETE FROM public.variants WHERE product_slug = 'kantha-chore-jacket';
-INSERT INTO public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) VALUES
-  ('UNI-KCJ-ECR-S', 'kantha-chore-jacket', 'Raw Ecru', '#ece6d9', 'S', 1249000, 1499000, 'in-stock', 8),
-  ('UNI-KCJ-ECR-M', 'kantha-chore-jacket', 'Raw Ecru', '#ece6d9', 'M', 1249000, 1499000, 'in-stock', 14),
-  ('UNI-KCJ-ECR-L', 'kantha-chore-jacket', 'Raw Ecru', '#ece6d9', 'L', 1249000, 1499000, 'in-stock', 10),
-  ('UNI-KCJ-ECR-XL', 'kantha-chore-jacket', 'Raw Ecru', '#ece6d9', 'XL', 1249000, 1499000, 'low-stock', 3);
+delete from public.variants where product_slug = 'arch-jaal-scarf';
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity) values
+  ('AJS-OS-GLD', 'arch-jaal-scarf', 'Ivory & Gold', '#efe4c8', 'OS', 189900, NULL, 'in-stock', 11);
 
--- Product 2 Embroidery Specification
-DELETE FROM public.embroidery_details WHERE product_slug = 'kantha-chore-jacket';
-INSERT INTO public.embroidery_details (
+delete from public.embroidery_details where product_slug = 'arch-jaal-scarf';
+insert into public.embroidery_details (
   product_slug, technique, technique_label, artisan_hours, placement,
   thread_composition, motif_story, macro_image_src, macro_image_alt
-) VALUES (
-  'kantha-chore-jacket',
-  'kantha-running-stitch',
-  'Bengal Kantha Needlecraft',
-  22,
-  ARRAY['Collar Lapels', 'Chest Pocket Border', 'Back Yoke Arch'],
-  'Hand-spun Wild Tussar Silk Floss',
-  'Inspired by traditional Bengal kantha textiles, where continuous running stitches reinforce cloth while tracing architectural jaal motifs in golden tussar silk.',
-  '/images/products/kantha-chore-jacket-2.jpg',
-  'Macro close-up of Kantha running stitch on raw canvas'
+) values (
+  'arch-jaal-scarf', 'metallic-zari', 'Metallic Zari', 9,
+  ARRAY['border', 'allover lattice'], 'Champagne zari on ivory silk', 'Mughal arch lattice, symmetric, tonal — the geometry reads only at arm’s length.',
+  '/images/products/embroidered-silk-scarf-1.jpg', 'Arch jaal lattice macro'
 );
 
--- Product 2 Verified Review
-DELETE FROM public.reviews WHERE product_slug = 'kantha-chore-jacket';
-INSERT INTO public.reviews (product_slug, author, rating, title, comment, verified) VALUES (
-  'kantha-chore-jacket',
-  'Meera K.',
-  5,
-  'A museum piece you can wear every day',
-  'The texture of raw ecru canvas paired with the uneven kantha running stitch feels genuine and deeply grounded in craft history.',
-  true
-);
-
--- --------------------------------------------------------------------
--- 7. Supabase Storage Setup (For Future Admin Product Photo Uploads)
--- --------------------------------------------------------------------
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('product-images', 'product-images', true)
-ON CONFLICT (id) DO NOTHING;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Read Product Images'
-  ) THEN
-    CREATE POLICY "Public Read Product Images" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Upload Product Images'
-  ) THEN
-    CREATE POLICY "Public Upload Product Images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
-  END IF;
-END $$;
+commit;
