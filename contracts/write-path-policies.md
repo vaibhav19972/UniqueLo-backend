@@ -2,6 +2,28 @@
 
 **Status as measured on 2026-10-25 against `heimnfjuwmmmejqcjbbd.supabase.co`.**
 
+> ## ⚠️ ACCEPTED RISK — DEFERRED, ON RECORD
+>
+> **Decision (2026-10-25, owner):** the write-policy hole below is **knowingly
+> accepted for now**, not overlooked. The project is in a pre-launch testing phase;
+> closing it requires deciding an admin identity first, and that would block the
+> pipeline work in flight.
+>
+> **Revisit before the catalogue is treated as production.** Concretely, before any
+> of these:
+>
+> - the storefront URL is shared publicly / indexed / linked from anywhere
+> - real money can be taken (real prices, real stock, live checkout)
+> - the catalogue is worth more than the time it takes to rebuild it
+>
+> The last one is the actual test. Today the catalogue is regenerable from
+> `products/` in one command, so a wipe costs an hour. Once products exist only in
+> the database, a wipe is unrecoverable.
+>
+> **One item is not deferrable in the same way:** `place_order()` is not installed,
+> so checkout cannot complete. That is a correctness gap rather than a security
+> one — see §4.
+
 The catalogue was loaded through the storefront's **publishable** key, using the
 plain table endpoints. That worked because the write policies are still the
 permissive ones from `schema.sql` (`using (true)` / `with check (true)`). This
