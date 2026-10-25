@@ -4,17 +4,20 @@
 -- means the database is NOT in sync with the code.
 -- ============================================================================
 
-\echo '--- 1. product column count (expect 44) ---'
+\echo '--- 1. product column count (expect 44 after schema.sql; 45 once 01_web adds intensity) ---'
 select count(*) as product_columns
 from information_schema.columns
 where table_schema = 'public' and table_name = 'products';
 
-\echo '--- 2. dropped columns must be GONE (expect 0) ---'
+\echo '--- 2. retired columns must be GONE (expect 0) ---'
+-- is_mock/vibes/moods were retired by decision (no mock flag in the DB);
+-- the rest were dropped by migrations/20261024.
 select count(*) as should_be_zero
 from information_schema.columns
 where table_schema = 'public' and table_name = 'products'
   and column_name in ('craft_region','craft_cluster','batch_number',
-                      'batch_total','expression_slug','sold_count');
+                      'batch_total','expression_slug','sold_count',
+                      'is_mock','vibes','moods','character_ids');
 
 \echo '--- 3. trust + marketplace columns must EXIST (expect 14) ---'
 select count(*) as should_be_fourteen
@@ -25,7 +28,7 @@ where table_schema = 'public' and table_name = 'products'
                       'return_window_days','weight_grams','hsn_code','size_chart',
                       'style_code','attributes','fit_notes');
 
-\echo '--- 4. rows (expect categories=6 garments=9 universes=3 motifs=7 collections=3 products=3 variants=25) ---'
+\echo '--- 4. rows (production-seed baseline: products=3 variants=25; the hosted catalogue is whatever products/ published) ---'
 select 'categories' as t, count(*) from categories
 union all select 'garments', count(*) from garments
 union all select 'universes', count(*) from universes

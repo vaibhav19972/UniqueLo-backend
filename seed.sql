@@ -1,6 +1,22 @@
 -- ====================================================================
--- UniqueLo — Production Seed Data
--- 13 Original Atelier Products (Zero Mock Data) + Universes + Motifs + Categories
+-- UniqueLo — LOCAL / DEV seed (LEGACY)
+--
+-- NOT a production path. The production baseline is `production-seed.sql`,
+-- which is GENERATED from web/src/data/*.json by backend/scripts/gen-seed.mjs
+-- and is verified by `gen-seed.mjs --check`. This file is hand-maintained
+-- legacy data kept for local experimentation; it is expected to lag the schema
+-- and may not load against the current column set. Prefer the pipeline.
+--
+-- MEASURED 2026-10-25 (Postgres 16, schema.sql applied first): this file does
+-- NOT load. It fails at line 249 with
+--   column "is_mock" of relation "products" does not exist
+-- and then cascades into product_images / variants / embroidery_details foreign
+-- key failures, because no product row was ever created. Root cause: it inserts
+-- is_mock, vibes and moods (never created by any DDL, 53 references) and carries
+-- none of the 20261024 columns — including `attributes`, which the
+-- products_validate_attributes trigger requires on every product insert.
+-- Reviving it is not a column strip; it needs regeneration. Do not run it
+-- against anything you care about.
 -- ====================================================================
 
 -- 1. Seed Universes

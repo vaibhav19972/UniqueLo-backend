@@ -1,6 +1,21 @@
 # Write-path policies — what to change and in what order
 
-**Status as measured on 2026-10-25 against `heimnfjuwmmmejqcjbbd.supabase.co`.**
+**Status as measured on 2026-10-25 against `heimnfjuwmmmejqcjbbd.supabase.co`; re-verified read-only the same day (§0).**
+
+## 0. Re-verification — read-only probe, 2026-10-25
+
+| Probe | Result |
+|---|---|
+| `products` columns | 44 — trust/marketplace set present; `is_mock`, `intensity`, `sold_count`, `batch_*`, `craft_*` all absent |
+| `rpc/place_order` | **installed** — posting `{"p_order":{…},"p_items":[]}` returns `400 22023 "place_order requires at least one order item"` (the function's own guard). The signature is `(p_order, p_items)`; posting `{"items":[]}` instead returns `404 PGRST202` and is **not** evidence the function is missing |
+| `rpc/get_order_details` | installed — `200 null` for an unknown uuid/email |
+| `rpc/publish_product` | installed, **not anon-executable** — `401 42501 permission denied for function` |
+| `admins` table | `404 PGRST205` — `20261025` still **unapplied** |
+| `products.intensity` | `42703` — `01_web_20261013` still **unapplied** |
+
+The write path is still permissive (the accepted risk above stands) and the admin allowlist is still
+missing, **but `place_order` is live and orders are being received on web and mobile (owner-confirmed
+2026-10-25)**. §4's "not installed (404)" line is corrected below.
 
 > ## ⚠️ ACCEPTED RISK — DEFERRED, ON RECORD
 >
@@ -20,9 +35,10 @@
 > `products/` in one command, so a wipe costs an hour. Once products exist only in
 > the database, a wipe is unrecoverable.
 >
-> **One item is not deferrable in the same way:** `place_order()` is not installed,
-> so checkout cannot complete. That is a correctness gap rather than a security
-> one — see §4.
+> **Note (corrected 2026-10-25):** `place_order()` **is** installed — the empty-items
+> probe returns `22023` from the function's own guard — so checkout does complete and
+> orders land. The accepted risk below therefore covers the *catalogue write path*
+> only, not checkout. See §0 and §4.
 
 The catalogue was loaded through the storefront's **publishable** key, using the
 plain table endpoints. That worked because the write policies are still the
@@ -39,7 +55,7 @@ document records what that means, and what to run to close it.
 | `20261024_data_model_trust_fields.sql` | **yes** | `attributes` column returns 200; `attribute_definitions` seeded (14 rows); the attribute trigger fires — inserting a sweater with `{}` attributes is refused with *"missing required attribute(s) … occasion, fabric_composition"* |
 | `20261026_catalogue_garment_types.sql` | **yes** | `sweater`, `blouse`, `kurta`, `jeans` all resolve in `garments` |
 | `20261025_admin_write_policies.sql` | **NO** | `public.admins` → HTTP 404 (table does not exist); `public.is_admin()` → *function not found* |
-| `20261026_publish_product.sql` | **NO** | `rpc/publish_product` → *permission denied* / 404; `rpc/place_order` → *function not found* |
+| `20261026_publish_product.sql` | **NO** | `rpc/publish_product` → exists, `401 42501` for anon (not applied as a policy); `rpc/place_order` → **installed** (`22023` guard) |
 
 Measured consequence — an unauthenticated caller holding the key that ships in the
 browser bundle can:
@@ -187,21 +203,26 @@ bundle.
 
 ## 4. Smaller items worth fixing
 
-- **`products` has no `status` / `is_mock` column.** Every row is live the instant
+- **`products` has no `status` column and `is_mock` is retired by decision (2026-10-25).** Every row is live the instant
   it is inserted, and `getProducts()` serves all of them. There is no draft state,
-  so a half-reviewed product cannot be staged. The 28 rows just loaded are
-  therefore **already served by the storefront** — worth knowing before you share
-  the URL.
-- **No storage bucket exists** (`GET /storage/v1/bucket` → `[]`), and creating one
-  is refused for the publishable key. Images are served from the web app's own
-  `public/` directory as web-relative paths (`/images/products/<slug>-1.jpg`), so
-  **the mobile client renders no product photography** — `ProductImage.isRemote`
-  gates on an `http(s)` prefix and a leading `/` fails that test. Either host the
-  images and write absolute URLs, or accept web-only and record it in the client
-  contract.
-- **`place_order()` is not installed** (`404`). Checkout and the mobile app's only
-  write path are both non-functional against this database. Confirm whether orders
-  are meant to work yet.
+  so a half-reviewed product cannot be staged. The measured catalogue is **29
+  products** (with 197 variants, 278 images, 29 embroidery rows — read-only count,
+  2026-10-25) and every one is **already served by the storefront** — worth knowing
+  before you share the URL.
+- **Storage bucket is live — the earlier "no bucket" finding is resolved (re-verified
+  2026-10-25).** `20261027_product_images_bucket.sql` recreated `product-images` and
+  `migrations` moved image src to absolute CDN URLs. Measured: a public object returns
+  `200 image/jpeg`, and **276 of 278** `product_images.src` values are absolute
+  `https://…/storage/v1/object/public/product-images/...` URLs. The 2 relative rows are
+  leftovers and should be rewritten.
+  (`GET /storage/v1/bucket` still returns `[]` for the publishable key — that listing
+  endpoint is admin-only, so it is **not** evidence the bucket is missing. Probe an
+  object URL instead.)
+  Mobile therefore *does* render product photography now: `ProductImage.isRemote`
+  gates on an `http(s)` prefix, which the absolute URLs satisfy.
+- **`place_order()` is installed** (re-verified 2026-10-25). Checkout works on web and
+  mobile and orders are landing in `orders` (owner-confirmed). What is *not* installed is
+  the admin allowlist (`admins` → 404), so the catalogue write path stays open — see §0.
 
 ---
 

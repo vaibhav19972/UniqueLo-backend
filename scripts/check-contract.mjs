@@ -44,7 +44,11 @@ function schemaColumnsFromFiles() {
     schema.indexOf('create table if not exists public.products'),
     schema.indexOf(');', schema.indexOf('create table if not exists public.products'))
   );
-  for (const m of block.matchAll(/^\s{2}([a-z_]+)\s+[a-z(]/gm)) cols.add(m[1]);
+  for (const line of block.split('\n').slice(1)) {
+    if (/^\s*constraint\b/i.test(line)) continue;
+    const m = line.match(/^\s{2}([a-z_]+)\s+[a-z(\[]/);
+    if (m) cols.add(m[1]);
+  }
 
   // every added column in every migration
   const migDir = resolve(REPO, 'backend/migrations');
@@ -53,10 +57,15 @@ function schemaColumnsFromFiles() {
     files = execFileSync('ls', [migDir]).toString().split('\n').filter((f) => f.endsWith('.sql')).sort();
   } catch { /* no migrations dir */ }
 
+  // Scope to public.products: a migration may also alter variants (barcode),
+  // and counting those as product columns is what made this off by one.
   for (const f of files) {
     const sql = readFileSync(resolve(migDir, f), 'utf8');
-    for (const m of sql.matchAll(/add column if not exists\s+([a-z_]+)/g)) cols.add(m[1]);
-    for (const m of sql.matchAll(/drop column if exists\s+([a-z_]+)/g)) cols.delete(m[1]);
+    for (const stmt of sql.split(/;\s*(?:\r?\n|$)/)) {
+      if (!/alter\s+table\s+(?:if\s+exists\s+)?public\.products\b/i.test(stmt)) continue;
+      for (const m of stmt.matchAll(/add column if not exists\s+([a-z_]+)/g)) cols.add(m[1]);
+      for (const m of stmt.matchAll(/drop column if exists\s+([a-z_]+)/g)) cols.delete(m[1]);
+    }
   }
   return cols;
 }
@@ -106,12 +115,34 @@ const generated = genStart > -1 && genEnd > -1
   : [];
 
 // ---------------------------------------------------------------------------
+// 3b. The contract document's §3 product tree (the doc cannot drift silently)
+// ---------------------------------------------------------------------------
+const contractMd = readFileSync(resolve(REPO, 'backend/CONTRACT.md'), 'utf8');
+const c3Start = contractMd.indexOf('## 3. Canonical Product read model');
+const c3End = contractMd.indexOf('### Client-side naming', c3Start);
+const contractCols = new Set();
+if (c3Start > -1 && c3End > -1) {
+  for (const line of contractMd.slice(c3Start, c3End).split('\n')) {
+    if (/^[├└]─\s*variants/.test(line)) break;
+    const m = line.match(/^[├└]─\s+([a-z_]+)/);
+    if (m) contractCols.add(m[1]);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 4. Compare
 // ---------------------------------------------------------------------------
 const problems = [];
 
 const selMissing = selected.filter((c) => !dbCols.has(c));
 if (selMissing.length) problems.push(`data.ts SELECTs columns that do not exist: ${selMissing.join(', ')}`);
+
+if (contractCols.size) {
+  const docMissing = [...dbCols].filter((c) => !contractCols.has(c));
+  const docExtra = [...contractCols].filter((c) => !dbCols.has(c));
+  if (docMissing.length) problems.push(`CONTRACT.md §3 omits columns: ${docMissing.join(', ')}`);
+  if (docExtra.length) problems.push(`CONTRACT.md §3 documents columns that do not exist: ${docExtra.join(', ')}`);
+}
 
 const genMissing = generated.filter((c) => !dbCols.has(c));
 if (genMissing.length) problems.push(`Admin SQL generator writes columns that do not exist: ${genMissing.join(', ')}`);
@@ -138,6 +169,7 @@ console.log(`${TEAL}contract check${OFF}  ${DIM}(${dbMode})${OFF}`);
 console.log(`  schema columns            : ${dbCols.size}`);
 console.log(`  data.ts selects           : ${selected.length}`);
 console.log(`  Admin generator writes    : ${generated.length}`);
+console.log(`  CONTRACT.md §3 columns    : ${contractCols.size}`);
 console.log(`  nested relations          : ${nested.map((n) => n.table).join(', ') || 'none'}`);
 
 if (problems.length) {
