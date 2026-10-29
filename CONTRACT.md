@@ -222,14 +222,21 @@ Single entry point: `rpc/place_order`. No client inserts into `orders`/`order_it
 
 **Guarantees** (clients rely on these, do not re-implement):
 
-1. Prices are re-read server-side from `variants` — client-sent `price_cents` is advisory.
-2. Stock is decremented atomically; insufficient stock aborts the whole transaction.
-3. Returns the created `orders.id` plus the item ledger.
-4. `SECURITY DEFINER` — anon may call it, but only it may write these tables.
+1. **Authoritative Pricing & Catalog SKUs:** Prices are re-read server-side from `variants`. Client `price_cents` is ignored. Every line item must reference a registered SKU in `public.variants` — uncatalogued SKUs abort with `P0002`.
+2. **Atomic Stock Decrement:** Stock is locked via `FOR UPDATE` and decremented atomically across all variants in the order; insufficient stock aborts the whole transaction with `P0001`.
+3. **Server-Side Discount & Shipping Derivation:** Disallows arbitrary client discounts. Unrecognized coupon codes abort with `22023`. Supported atelier coupons (`ATELIER10`, `GOBONKERS15`, `BONKERS20`, `NEEDLECRAFT`, `FREESHIP`) are calculated server-side. Shipping is calculated or clamped server-side.
+4. **Authoritative Totals:** `orders` header stores server-calculated `subtotal_cents`, `discount_cents`, `shipping_cents`, and `total_cents`.
+5. **SECURITY DEFINER:** anon may call it, but only it may write these tables.
+
+**Order Status Vocabulary:**
+- `confirmed-cod` — Placed with Cash on Delivery payment
+- `confirmed` — Placed with prepaid electronic payment (UPI, card, etc.)
+- `reserved` — Hold session / pre-payment reservation
+- `processing` / `shipped` / `delivered` / `cancelled` — Post-order fulfillment lifecycle
 
 **Error surface:** a `raise exception` aborts with no partial order. Clients show the
-message verbatim and must not retry blindly (stock may have moved). The empty-items guard
-is `22023`.
+message verbatim and must not retry blindly (stock may have moved). The empty-items / invalid coupon guard
+is `22023`, out of stock is `P0001`, unknown SKU is `P0002`.
 
 ---
 
@@ -249,10 +256,12 @@ is `22023`.
 | `20261026_catalogue_garment_types.sql` | web | garment registry rows | **yes** |
 | `20261026_publish_product.sql` | web | transactional publish RPC | installed (anon denied) |
 | `20261027_product_images_bucket.sql` | web | storage bucket + policies | bucket recreated (`ff1f052`) |
-| `20261030_harden_place_order.sql` | backend | server-side prices + atomic stock decrement | pending deploy |
+| `20261030_harden_place_order.sql` | backend | server-side prices, coupon validation, atomic stock decrement | pending deploy |
 
 **Ordering caveat:** `01_web_*` sorts first lexically but was authored after the mobile
-chain. `schema.sql` carries the baseline shape; apply `migrations/` before seeding.
+chain. `schema.sql` carries the baseline shape. Note that `20261026_catalogue_garment_types.sql`
+has foreign keys referencing `categories(slug)`, so on a fresh database, categories must
+be seeded before running `20261026` or apply `production-seed.sql` after initial schema setup.
 Verify with `scripts/check-schema-parity.mjs` and `scripts/check-contract.mjs` after any
 change.
 

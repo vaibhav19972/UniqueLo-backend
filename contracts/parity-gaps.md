@@ -13,7 +13,7 @@ explicitly; do not let them drift unrecorded.
 | 4 | `artStyleSlug` | present on `Product` | absent from `ProductDto` | art-style facet unavailable on mobile | open |
 | 5 | `editorialImages` | optional field on `Product` | absent | editorial rail cannot render on mobile | open |
 | 6 | Price authority | server re-read via `place_order` | same RPC | consistent | closed |
-| 7 | Trust/logistics (`cod_available`, `return_window_days`, `country_of_origin`, `style_code`, `attributes`) | mapped | mapped in `ProductDto`, `Product`, `Mappers.kt` | mobile PDP now has access to COD / returns / origin | **closed 2026-10-29** |
+| 7 | Trust/logistics (`cod_available`, `return_window_days`, `country_of_origin`, `style_code`, `manufacturer_*`) | mapped | mapped in `ProductDto`, `Product`, and `Mappers.kt` | mobile PDP now has access to COD / returns / origin / style / maker metadata (raw `attributes` jsonb remains web-only) | **closed 2026-10-29** |
 
 ## How to close one
 
