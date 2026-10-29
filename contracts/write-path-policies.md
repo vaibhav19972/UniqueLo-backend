@@ -47,6 +47,37 @@ document records what that means, and what to run to close it.
 
 ---
 
+## 0b. Blocking findings before customer sign-up (measured 2026-10-29)
+
+Applying `20261025` is **not sufficient** to close the write path. Two defects in
+the deployed chain were found on a PG16 replica built from `schema.sql` + the
+entire migration chain + `production-seed.sql`:
+
+**Finding 1 — the old permissive policy survives.** `20260104` created
+`"Authenticated admin write <t>"` on each catalogue table as
+`for all to authenticated using (true) with check (true)`. `20261025` adds
+`"Admins write <t>"` (`is_admin()`) but its loop only drops the latter name.
+Both policies then exist, and **Postgres ORs permissive policies**, so
+`using (true)` wins: an authenticated non-admin still has full write.
+Measured: `set role authenticated` + a non-admin `sub` inserted into `garments`
+with `20261025` applied. `20261031` §5b drops the legacy policies; that is the
+step that actually closes the hole.
+
+**Finding 2 — storage is ungated.** `20260104` gated `product-images` uploads on
+`to authenticated`, which was safe only while "authenticated" meant "the owner".
+`20261025` does not touch `storage.objects` (0 references). Enabling customer
+sign-up without §5 of `20261031` gives every customer write/delete on catalogue
+photography. Re-gated on `is_admin()`, split into insert/update/delete, public
+read preserved.
+
+**Finding 3 — direct order inserts were still open.** `schema.sql` retains
+`Allow public create orders` / `create order items` (anon INSERT `true`). With
+per-user order history readable, a direct `POST /rest/v1/orders` carrying a
+victim's `user_id` plants fake rows in their history. Revoked by `20261031` §5c.
+`place_order` is `SECURITY DEFINER`, so RPC writes are unaffected.
+
+---
+
 ## 1. What is actually applied on the hosted project
 
 | Migration | Applied? | Evidence |

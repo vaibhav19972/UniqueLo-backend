@@ -62,7 +62,25 @@ applied — the accepted risk in `contracts/write-path-policies.md` stands.
 | `newsletter_subscribers` | `uuid` | email capture | |
 | `orders` / `order_items` | `uuid` | order ledger | Written only via `place_order` |
 | `attribute_definitions` | `key` | per-garment attribute contract | Created by `20261024`; values in `products.attributes` |
-| `admins` | `user_id` | admin allowlist | Created by `20261025` — **not applied on hosted** |
+| `admins` | `user_id` | admin allowlist | Created by `20261025`. Gate for every catalogue/asset write |
+| `customer_addresses` | `uuid` | saved delivery addresses | Created by `20261031`. `pincode` is 6-digit text; max one `is_default` per user |
+| `customer_wishlists` | `(user_id, product_slug)` | cloud saved pieces | Created by `20261031`. **No FK to `products`** — a delisted product must not erase a saved piece (D-18) |
+
+### Authorization model (authoritative)
+
+| Principal | Catalogue read | Catalogue write | Order write | Order read |
+|---|---|---|---|---|
+| `anon` | yes (RLS `using(true)`) | **no** | `rpc/place_order` only | `rpc/get_order_details(id, email)` only |
+| `authenticated` (customer) | yes | **no** — `is_admin()` false | `rpc/place_order` only | own rows (`orders.user_id = auth.uid()`) |
+| `authenticated` (admin) | yes | yes (`is_admin()`) | `rpc/place_order` only | own rows |
+
+`orders.user_id` is **derived server-side** by `place_order` from `auth.uid()`.
+A `user_id` in the RPC payload is ignored. Guest checkout sends none and lands
+`user_id = null`; guests are never visible to any signed-in user.
+
+There is no client INSERT path into `orders`/`order_items` — the legacy anon
+INSERT policies were revoked by `20261031`. `place_order` is `SECURITY DEFINER`,
+so it writes without them.
 
 **Naming rule:** database is `snake_case`; clients are `camelCase`; the adapter translates.
 A field is named exactly once in the DB and exactly once per client — never renamed in transit
@@ -256,7 +274,20 @@ is `22023`, out of stock is `P0001`, unknown SKU is `P0002`.
 | `20261026_catalogue_garment_types.sql` | web | garment registry rows | **yes** |
 | `20261026_publish_product.sql` | web | transactional publish RPC | installed (anon denied) |
 | `20261027_product_images_bucket.sql` | web | storage bucket + policies | bucket recreated (`ff1f052`) |
-| `20261030_harden_place_order.sql` | backend | server-side prices, coupon validation, atomic stock decrement | pending deploy |
+| `20261030_harden_place_order.sql` | backend | server-side prices, coupon validation, atomic stock decrement | **yes** (verified 2026-10-29: bogus SKU → `P0002`) |
+| `20261031_customer_accounts.sql` | backend | `orders.user_id`, `customer_addresses`, `customer_wishlists`, storage re-gate, RPC-only order writes | **pending deploy** — proven 13/13 on a PG16 replica (`scripts/verify-customer-accounts.sql`) |
+
+**Two findings that change the deploy order:**
+
+1. `20261025` alone does **not** close the write path. `20260104` created
+   `"Authenticated admin write <t>"` (`using (true)`) and `20261025` only drops
+   `"Admins write <t>"`. Per policies OR together, so any signed-in user keeps
+   full catalogue write. `20261031` §5b drops the legacy policies — **the
+   lockdown is only real after `20261031` runs**, not after `20261025`.
+2. `20261025` never touches `storage.objects`. The image-upload policies from
+   `20260104` are gated on `to authenticated` alone, so customer sign-up would
+   hand out delete rights on catalogue photography. `20261031` §5 re-gates them
+   on `is_admin()`.
 
 **Ordering caveat:** `01_web_*` sorts first lexically but was authored after the mobile
 chain. `schema.sql` carries the baseline shape. Note that `20261026_catalogue_garment_types.sql`
