@@ -207,3 +207,21 @@ begin;
   select public.place_order('{"customer_email":"g@example.com","coupon_code":"BOGUS99"}'::jsonb,
     jsonb_build_array(jsonb_build_object('variant_sku','UL-TC51-ECRU-XS','quantity',1)));
 rollback;
+
+\echo '===== T14 customer reads their own order ITEMS (20261032), never others'
+begin;
+  insert into public.orders (id, customer_name, customer_email, user_id, subtotal_cents, total_cents)
+  values ('11111111-2222-4333-8444-555555555555','Mine','items@example.com','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',100,100);
+  insert into public.order_items (id, order_id, product_slug, variant_sku, product_name, color, size, quantity, price_cents)
+  values ('21111111-2222-4333-8444-555555555555','11111111-2222-4333-8444-555555555555','p-mine','S-MINE','Mine Item','Black','M',1,100);
+
+  insert into public.orders (id, customer_name, customer_email, user_id, subtotal_cents, total_cents)
+  values ('31111111-2222-4333-8444-555555555555','Theirs','items-other@example.com','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',100,100);
+  insert into public.order_items (id, order_id, product_slug, variant_sku, product_name, color, size, quantity, price_cents)
+  values ('41111111-2222-4333-8444-555555555555','31111111-2222-4333-8444-555555555555','p-theirs','S-THEIRS','Their Item','Black','M',1,100);
+
+  set local role authenticated;
+  set local request.jwt.claim.sub = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  \echo 'items visible (expect exactly 1, S-MINE):'
+  select variant_sku from public.order_items;
+rollback;
