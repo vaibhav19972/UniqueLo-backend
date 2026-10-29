@@ -249,6 +249,7 @@ is `22023`.
 | `20261026_catalogue_garment_types.sql` | web | garment registry rows | **yes** |
 | `20261026_publish_product.sql` | web | transactional publish RPC | installed (anon denied) |
 | `20261027_product_images_bucket.sql` | web | storage bucket + policies | bucket recreated (`ff1f052`) |
+| `20261030_harden_place_order.sql` | backend | server-side prices + atomic stock decrement | pending deploy |
 
 **Ordering caveat:** `01_web_*` sorts first lexically but was authored after the mobile
 chain. `schema.sql` carries the baseline shape; apply `migrations/` before seeding.
