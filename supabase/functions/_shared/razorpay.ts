@@ -72,12 +72,22 @@ export async function verifySignature(
 }
 
 export class RazorpayApiError extends Error {
+  // Declared explicitly rather than as a constructor parameter property:
+  // `readonly status: number` in the signature is a parameter property, which
+  // Node's strip-only TypeScript mode rejects with
+  // ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX. That broke the signature verifier
+  // entirely — and a verifier that cannot run is worse than none, because the
+  // failure it guards (every genuine payment rejected) is invisible until a
+  // real customer hits it.
+  status: number;
+
   constructor(
     message: string,
-    readonly status: number
+    status: number
   ) {
     super(message);
     this.name = 'RazorpayApiError';
+    this.status = status;
   }
 }
 
