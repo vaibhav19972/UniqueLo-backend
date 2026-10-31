@@ -260,7 +260,11 @@ create table if not exists public.orders (
   -- from auth.uid(); a user_id in the RPC payload is ignored. NULL for guest
   -- checkout, and guests are never visible to a signed-in user.
   user_id uuid references auth.users(id) on delete set null,
-  status text default 'confirmed',
+  status text not null default 'confirmed',
+  -- Fulfilment (migrations/20261102). NULL until the order ships; written by
+  -- admin fulfilment, never by a client.
+  tracking_number text,
+  carrier         text,
   subtotal_cents integer not null,
   discount_cents integer default 0,
   shipping_cents integer default 0,
@@ -271,7 +275,16 @@ create table if not exists public.orders (
   coupon_code text,
   gift_note text,
   shipping_address jsonb,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  -- CONTRACT.md §6 vocabulary, enforced (migrations/20261102). 'pending' is
+  -- included for a prepaid reservation that has not been paid yet.
+  constraint orders_status_valid
+    check (status in ('pending', 'reserved', 'confirmed', 'confirmed-cod',
+                      'processing', 'shipped', 'delivered', 'cancelled')),
+  -- A tracking number without a carrier is unusable, and vice versa.
+  constraint orders_tracking_pairs_with_carrier
+    check ((tracking_number is null and carrier is null)
+        or (tracking_number is not null and carrier is not null))
 );
 
 create table if not exists public.order_items (

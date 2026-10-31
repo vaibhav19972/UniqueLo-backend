@@ -23,6 +23,14 @@
  *
  * WHAT IT DOES NOT COVER (deliberate)
  * -----------------------------------
+ * CONSTRAINTS ARE ALSO OUT OF SCOPE — deliberately, but know the limit.
+ * This gate compares TABLES and COLUMNS. A CHECK, UNIQUE or FK added by a
+ * migration is not compared, so `schema.sql` could drift from the chain at the
+ * constraint level and stay green. The convention that covers it is the
+ * `20261101` precedent: a CHECK lives in BOTH places — inline in schema.sql for
+ * a fresh build, and guarded in the migration by
+ * `if not exists (select 1 from pg_constraint where conname = ...)`. Follow it.
+ *
  * Policies, functions, triggers and grants are owned by the migration chain —
  * schema.sql cannot express the final form of them (e.g. the storage policy
  * needs `is_admin()`, which a migration creates). This gate scopes to tables
