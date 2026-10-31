@@ -14,6 +14,8 @@ explicitly; do not let them drift unrecorded.
 | 5 | `editorialImages` | optional field on `Product` | absent | editorial rail cannot render on mobile | open |
 | 6 | Price authority | server re-read via `place_order` | same RPC | consistent | closed |
 | 7 | Trust/logistics (`cod_available`, `return_window_days`, `country_of_origin`, `style_code`, `manufacturer_*`) | mapped | mapped in `ProductDto`, `Product`, and `Mappers.kt` | mobile PDP now has access to COD / returns / origin / style / maker metadata (raw `attributes` jsonb remains web-only) | **closed 2026-10-29** |
+| 8 | **Display pricing authority** — `quote_order` is never called | bag and `/checkout` price every number from `rpc/quote_order` (`web/src/lib/pricing.ts`) | `RootStore.submitOrder` records `bag.subtotalCents` as the order total; **zero** references to `quote_order` in `commonMain` | **Customer-visible money bug.** A ₹899 tee + ₹99 shipping = ₹998 on web, ₹899 on mobile. No COD fee, no coupons, no free-shipping threshold. `OrdersStore.recordOrder` persists the subtotal as `totalCents`, so mobile order history is wrong for every COD or coupon order. Gap #6 covered *charge* authority (both call `place_order`); it never covered *display*. | **open — 2026-10-31** |
+| 9 | `identity_checked` / per-user coupon limits | shows limits as advisory; server enforces at `place_order` | n/a until #8 lands | `quote_order` passes `p_check_identity=false` for anonymous callers, so `per_user_limit` cannot be verified at quote time. Mobile must not promise "one per customer" in coupon copy. Enforcement is at `place_order` against the typed email. | open (by design — see CONTRACT §6) |
 
 ## How to close one
 
