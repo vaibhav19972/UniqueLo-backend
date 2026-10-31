@@ -1,3 +1,17 @@
+-- RETIRED 2026-10-31 — kept for history, DO NOT APPLY.
+--
+-- This was authored for the web client on 2026-10-13 and never applied to the
+-- hosted project. By 2026-10-31 it was obsolete in every respect:
+--   * `intensity` is NOT in contracts/live-columns.txt (44 columns) and neither
+--     client reads it as a column — both DERIVE it from expression_score
+--     (backend/contracts/parity-gaps.md #2, closed 2026-10-29).
+--     Applying it would flip check-schema-parity.mjs red.
+--   * `craft_techniques` and `edits` already exist in schema.sql.
+--   * The `moods` column mentioned below was never created by any DDL.
+--
+-- Moved to _archive/ so both gates ignore it (they scan migrations/*.sql
+-- non-recursively). Resurrecting it requires a CONTRACT.md change first.
+-- ---------------------------------------------------------------------------
 -- 20261013_taxonomy_columns.sql
 -- Taxonomy re-architecture: intensity axis + craft techniques + edits.
 --

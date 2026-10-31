@@ -1,15 +1,38 @@
 -- ====================================================================
 -- UniqueLo — Supabase schema (bootstrap DDL)
 --
--- This file is the BASELINE a fresh project is created from. It carries the
--- current products/variants shape (including the 20261024 trust + marketplace
--- columns), but the migration chain in migrations/ is authoritative: it also
--- creates attribute_definitions, the attribute-validation and rating-cache
--- triggers, the order RPCs and the write-path policies.
+-- SCOPE: this file owns TABLES, COLUMNS, INDEXES and the BASELINE RLS posture
+-- (enable row level security + the original permissive read policies). It does
+-- NOT own the FINAL policies, functions or triggers — the migration chain does,
+-- because their correct form depends on objects a migration creates first (the
+-- storage write policy needs is_admin(); the order RPCs are plpgsql).
+--
+-- CAUTION: running this file alone leaves writes PERMISSIVE by design — the
+-- baseline mirrors the original pre-lockdown state so a fresh project boots.
+-- The lockdown arrives with migrations 20261025 + 20261031. Do not point a
+-- public deployment at a schema.sql-only database.
+--
+-- TARGET PLATFORM: Supabase. Five tables below carry `references auth.users(id)`
+-- (admins, orders.user_id, customer_addresses, customer_wishlists,
+-- coupon_redemptions),
+-- because that is where Supabase keeps identities. On **plain Postgres** that
+-- schema does not exist, so for a local build apply the stub first:
+--
+--   backend/scripts/local-bootstrap.sql   <- plain Postgres only
+--   backend/schema.sql                    <- this file
+--   backend/migrations/                   <- ordered
+--   backend/production-seed.sql
+--
+-- On Supabase, skip the stub: auth.users and storage.* already exist.
 --
 -- Documented load order: schema.sql -> migrations/ (ordered) -> production-seed.sql
 -- Dev seed.sql is legacy/local-only and is NOT a production path.
+--
+-- This baseline was 7 tables and 1 column behind the migration chain until
+-- 2026-10-31; scripts/check-schema-completeness.mjs now fails the build if that
+-- ever happens again. Do not add a table to migrations/ without adding it here.
 -- ====================================================================
+
 
 -- 1. Enable UUID Extension
 create extension if not exists "uuid-ossp";
@@ -233,6 +256,10 @@ create table if not exists public.orders (
   id uuid primary key default uuid_generate_v4(),
   customer_name text not null,
   customer_email text not null,
+  -- Order ownership (migrations/20261031). DERIVED SERVER-SIDE by place_order
+  -- from auth.uid(); a user_id in the RPC payload is ignored. NULL for guest
+  -- checkout, and guests are never visible to a signed-in user.
+  user_id uuid references auth.users(id) on delete set null,
   status text default 'confirmed',
   subtotal_cents integer not null,
   discount_cents integer default 0,
@@ -261,6 +288,124 @@ create table if not exists public.order_items (
 );
 
 -- ====================================================================
+-- Promotion / account / admin tables
+--
+-- These were created by migrations between 20261024 and 20261101 and were
+-- absent from this baseline, which meant a fresh build could not run
+-- quote_order() at all. Ordering below is FK-safe: coupons before
+-- coupon_redemptions (which FKs it), orders already exists above.
+-- ====================================================================
+
+-- 15. Attribute contract (per-garment attribute definitions)
+-- Values themselves live in products.attributes jsonb.
+create table if not exists public.attribute_definitions (
+  key            text primary key,          -- 'neck_type', 'sleeve_length'
+  label          text not null,             -- 'Neck Type'
+  data_type      text not null default 'enum',
+  unit           text,                      -- 'cm', 'gsm'
+  options        text[],                    -- allowed values when data_type='enum'
+  -- which garment types require this attribute. Empty = applies to all.
+  applies_to     text[] not null default '{}',
+  is_required    boolean not null default false,
+  display_group  text,                       -- 'Style', 'Fabric', 'Care', 'Fit'
+  order_num      integer not null default 0,
+  created_at     timestamptz not null default now(),
+  constraint attribute_definitions_type_valid
+    check (data_type in ('enum', 'text', 'number', 'boolean', 'measurement'))
+);
+
+-- 16. Admin allowlist — the gate for every catalogue/asset write
+create table if not exists public.admins (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  email      text,
+  note       text,
+  created_at timestamptz not null default now()
+);
+
+-- 17. Coupons (the promotion engine)
+create table if not exists public.coupons (
+  code               text primary key,
+  description        text,
+  -- 'percent'       discount_value is percentage points (10 = 10%)
+  -- 'fixed'         discount_value is paise
+  -- 'free_shipping' discount_value is ignored; waives the shipping line
+  discount_type      text not null check (discount_type in ('percent', 'fixed', 'free_shipping')),
+  discount_value     integer not null default 0 check (discount_value >= 0),
+  -- Ceiling for percentage coupons. NULL = uncapped (dangerous; prefer a cap).
+  max_discount_cents integer check (max_discount_cents is null or max_discount_cents > 0),
+  min_subtotal_cents integer not null default 0 check (min_subtotal_cents >= 0),
+  starts_at          timestamptz not null default now(),
+  expires_at         timestamptz,
+  total_usage_limit  integer check (total_usage_limit is null or total_usage_limit > 0),
+  per_user_limit     integer not null default 1 check (per_user_limit > 0),
+  first_order_only   boolean not null default false,
+  -- Only one coupon applies per order today. The column exists so stacking can
+  -- be switched on later without a schema change; false means "cannot combine".
+  stackable          boolean not null default false,
+  -- Whether this code may be ADVERTISED to a customer who has not typed it.
+  -- Staff/VIP/compensation codes set this false: they stay redeemable if you
+  -- know the code, but the best_coupon prompt will never reveal them.
+  is_public          boolean not null default true,
+  is_active          boolean not null default true,
+  created_at         timestamptz not null default now(),
+  constraint coupons_window_valid check (expires_at is null or expires_at > starts_at),
+  constraint coupons_percent_sane check (discount_type <> 'percent' or discount_value between 1 and 100)
+);
+
+-- 18. Shipping rules (data-driven carriage)
+create table if not exists public.shipping_rules (
+  id               uuid primary key default gen_random_uuid(),
+  name             text not null,
+  flat_rate_cents  integer not null default 0 check (flat_rate_cents >= 0),
+  -- NULL = always free. Otherwise: free when PRE-DISCOUNT subtotal reaches this.
+  free_above_cents integer check (free_above_cents is null or free_above_cents >= 0),
+  cod_fee_cents    integer not null default 0 check (cod_fee_cents >= 0),
+  -- Unit count, not rupees. NULL = no cap.
+  cod_max_units    integer check (cod_max_units is null or cod_max_units > 0),
+  cod_enabled      boolean not null default true,
+  is_active        boolean not null default true,
+  created_at       timestamptz not null default now()
+);
+
+-- 19. Saved delivery addresses (migrations/20261031)
+create table if not exists public.customer_addresses (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid not null references auth.users(id) on delete cascade,
+  label          text,
+  is_default     boolean not null default false,
+  recipient_name text not null,
+  phone          text not null,
+  address_line   text not null,
+  landmark       text,
+  city           text not null,
+  state          text not null,
+  pincode        text not null check (pincode ~ '^[0-9]{6}$'),
+  created_at     timestamptz not null default now()
+);
+
+-- 20. Cloud saved pieces. NO FK to products — a delisted product must not
+-- erase a customer's saved piece (D-18).
+create table if not exists public.customer_wishlists (
+  user_id      uuid not null references auth.users(id) on delete cascade,
+  product_slug text not null,
+  created_at   timestamptz not null default now(),
+  primary key (user_id, product_slug)
+);
+
+-- 21. Redemption ledger (coupon usage accounting)
+create table if not exists public.coupon_redemptions (
+  id                     uuid primary key default gen_random_uuid(),
+  coupon_code            text not null references public.coupons(code) on delete restrict,
+  order_id               uuid not null references public.orders(id) on delete cascade,
+  -- Set when a signed-in customer placed the order. NULL for guest orders,
+  -- which is why email is the fallback identity below.
+  user_id                uuid references auth.users(id) on delete set null,
+  customer_email         text not null,
+  discount_applied_cents integer not null check (discount_applied_cents >= 0),
+  created_at             timestamptz not null default now()
+);
+
+-- ====================================================================
 -- Indexes for High Performance
 -- ====================================================================
 create index if not exists idx_products_category on public.products(category_slug);
@@ -272,6 +417,9 @@ create index if not exists idx_products_featured on public.products(featured);
 create index if not exists idx_variants_product on public.variants(product_slug);
 create index if not exists idx_product_images_product on public.product_images(product_slug);
 create index if not exists idx_reviews_product on public.reviews(product_slug);
+-- orders.user_id (migrations/20261031). Partial: guest orders are NULL.
+create index if not exists idx_orders_user_id on public.orders(user_id)
+  where user_id is not null;
 
 -- ====================================================================
 -- Row Level Security (RLS)
@@ -288,6 +436,18 @@ alter table public.embroidery_details enable row level security;
 alter table public.newsletter_subscribers enable row level security;
 alter table public.reviews enable row level security;
 alter table public.orders enable row level security;
+-- The seven tables restored to this baseline on 2026-10-31 came from migrations
+-- that were BORN locked. Leaving them out would make the baseline weaker than
+-- the chain: `admins` would be a readable/writable admin allowlist and
+-- `coupons` a public promo book. RLS-on with no policy is deny-all, which is
+-- the correct baseline; the migrations supply the real policies.
+alter table public.attribute_definitions enable row level security;
+alter table public.admins enable row level security;
+alter table public.coupons enable row level security;
+alter table public.shipping_rules enable row level security;
+alter table public.customer_addresses enable row level security;
+alter table public.customer_wishlists enable row level security;
+alter table public.coupon_redemptions enable row level security;
 alter table public.order_items enable row level security;
 
 -- Public READ policies for catalog
@@ -354,12 +514,22 @@ for insert with check (bucket_id = 'product-images');
 -- order RPCs and the write-path policies; apply it before seeding.
 --
 --   1. Production baseline: backend/production-seed.sql  (generated by
---      scripts/gen-seed.mjs; 3 products / 25 variants at time of writing)
+--      scripts/gen-seed.mjs; 29 products / 197 variants)
 --   2. Local / dev:        backend/seed.sql  (legacy, hand-maintained, expected
 --      to lag the schema — NOT a production path)
 --
--- Hosted state measured 2026-10-25: products = 44 columns (trust shape, no
--- is_mock, no intensity); place_order + get_order_details installed;
--- publish_product installed but not anon-executable; public.admins absent, so
--- 20261025 and the lockdown chain are not in force.
+-- Hosted state measured 2026-10-31 (read-only probes):
+--   products = 44 columns (trust shape; no is_mock, no intensity)
+--   place_order / quote_order / get_order_details installed
+--   public.admins present                   -> 20261025 applied
+--   anon INSERT garments -> 401 42501       -> catalogue write path CLOSED
+--   customer_addresses / customer_wishlists / orders.user_id present
+--                                           -> 20261031 applied
+--   coupons / shipping_rules / coupon_redemptions present
+--                                           -> 20261101 applied
+--   intensity absent BY DECISION; 01_web_20261013 retired to migrations/_archive/
+--   (both clients derive intensity from expression_score — parity gap #2)
+--
+-- The earlier "write path is open / admins absent" reading was accurate on
+-- 2026-10-25 and is superseded by the measurements above.
 -- ====================================================================

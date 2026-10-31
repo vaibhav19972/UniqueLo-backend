@@ -63,8 +63,12 @@ function schemaColumnsFromFiles() {
     const sql = readFileSync(resolve(migDir, f), 'utf8');
     for (const stmt of sql.split(/;\s*(?:\r?\n|$)/)) {
       if (!/alter\s+table\s+(?:if\s+exists\s+)?public\.products\b/i.test(stmt)) continue;
-      for (const m of stmt.matchAll(/add column if not exists\s+([a-z_]+)/g)) cols.add(m[1]);
-      for (const m of stmt.matchAll(/drop column if exists\s+([a-z_]+)/g)) cols.delete(m[1]);
+      // /gi + toLowerCase: migrations are not consistently lowercase. The
+      // `01_web_20261013` taxonomy migration wrote `ALTER TABLE`/`ADD COLUMN`
+      // in caps and was silently invisible here for two weeks — which is why
+      // `intensity` was never counted. Do not "simplify" these back.
+      for (const m of stmt.matchAll(/add column if not exists\s+([a-z_]+)/gi)) cols.add(m[1].toLowerCase());
+      for (const m of stmt.matchAll(/drop column if exists\s+([a-z_]+)/gi)) cols.delete(m[1].toLowerCase());
     }
   }
   return cols;
