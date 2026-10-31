@@ -268,6 +268,23 @@ Single entry point: `rpc/place_order`. No client inserts into `orders`/`order_it
 - `reserved` — Hold session / pre-payment reservation
 - `processing` / `shipped` / `delivered` / `cancelled` — Post-order fulfillment lifecycle
 
+**Order status vocabulary — ENFORCED since `20261102`.** `orders.status` carries
+`orders_status_valid`, so anything outside this set is refused by the database:
+
+| Status | Set by | Meaning |
+|---|---|---|
+| `pending` | *(reserved — no writer yet)* | reserved, not yet paid. **Nothing writes this today**; it exists so the payment gateway does not need a second migration. Do not build UI that assumes it appears |
+| `reserved` | legacy mobile RPC | stock held, unconfirmed |
+| `confirmed` | `place_order` (prepaid) | paid or pay-on-ship agreed |
+| `confirmed-cod` | `place_order` (`payment_method='cod'`) | cash on delivery agreed |
+| `processing` | admin | being packed |
+| `shipped` | admin | with courier; `tracking_number` + `carrier` now required |
+| `delivered` | admin | received |
+| `cancelled` | admin | void |
+
+The column is `not null`. `tracking_number` and `carrier` are a pair: setting one
+without the other violates `orders_tracking_pairs_with_carrier`.
+
 **Error surface:** a `raise exception` aborts with no partial order. Clients show the
 message verbatim and must not retry blindly (stock may have moved). The empty-items / invalid coupon guard
 is `22023`, out of stock is `P0001`, unknown SKU is `P0002`.
