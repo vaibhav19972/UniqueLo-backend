@@ -15,9 +15,36 @@
 -- occasion+fabric only, while a tee needed five.
 --
 -- Idempotent: safe to run more than once.
+--
+-- SELF-SUFFICIENCY (added 2026-10-31)
+-- -----------------------------------
+-- The `garments` rows below carry `category_slug` FKs. On a fresh database
+-- `categories` is empty until production-seed.sql runs, and the documented load
+-- order puts the seed LAST — so this migration aborted with
+-- `garments_category_slug_fkey`. Proven by execution on PG16, not by reading:
+-- the caveat previously recorded in CONTRACT.md §7 ("categories must be seeded
+-- before running 20261026") was impossible to follow, because the seed is a
+-- single generated file applied last.
+--
+-- Moving the seed earlier is not an option: it writes variants.compare_at_ends_at
+-- and orders.cod_fee_cents, which 20261101 creates. So the dependency is removed
+-- from this side instead. These three rows are placeholders only — production
+-- seed upserts `categories` with `on conflict do update`, so the real names and
+-- copy overwrite these on load. Any database that already has them (hosted
+-- included) is unaffected: `do nothing` is a no-op.
 -- ============================================================================
 
 begin;
+
+-- ---------------------------------------------------------------------------
+-- 0. Category rows this migration's FKs depend on (see header)
+-- ---------------------------------------------------------------------------
+insert into public.categories (slug, name, label, description, order_num)
+values
+  ('knitwear', 'Knitwear', 'Knitwear', 'Knitwear.', 2),
+  ('tops',     'Tops & Shirts', 'Tops',  'Tops.',     3),
+  ('bottoms',  'Bottoms', 'Bottoms',     'Bottoms.',  4)
+on conflict (slug) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- 1. New garment silhouettes

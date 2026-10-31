@@ -74,6 +74,22 @@ $$;
 create or replace function auth.role() returns text
 language sql stable as $$ select 'anon'::text $$;
 
+-- auth.jwt() is what 20261025's is_admin() reads: it honours a server-set
+-- `app_metadata.role` claim (admin / service_role) as an alternative to a row
+-- in public.admins. Supabase supplies it; without it the admin migration fails
+-- with "function auth.jwt() does not exist" — which is exactly how the first
+-- real build of this chain failed on 2026-10-31.
+--
+-- Reads a GUC so a test can simulate an admin claim without a real token:
+--   set local request.jwt.claims = '{"app_metadata":{"role":"admin"}}';
+create or replace function auth.jwt() returns jsonb
+language sql stable as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb,
+    '{}'::jsonb
+  )
+$$;
+
 -- ---------------------------------------------------------------------------
 -- storage — buckets + objects. schema.sql inserts a bucket and creates
 -- policies on storage.objects, so both must exist before it runs.
