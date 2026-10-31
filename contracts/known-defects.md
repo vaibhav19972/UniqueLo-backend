@@ -1,0 +1,13 @@
+# Known defects — open, off-contract
+
+Real defects found while working, not yet fixed. Each has a reproduction and an
+owner-facing consequence. Close by fixing, then move the row to "closed" — do
+not delete rows; the log is the value.
+
+| # | Defect | Evidence | Consequence | Status |
+|---|---|---|---|---|
+| KD-1 | `quote_order`/`price_cart` report `best_coupon.value_cents = 0` for `discount_type = 'free_shipping'`, while the **same** coupon in `available_offers` reports `value_cents = 9900` | Live, 2026-10-31: quote a ₹899 tee → `best_coupon {code: FREESHIP, value_cents: 0}` but `available_offers[0] {code: FREESHIP, value_cents: 9900}`, and `savings_cents: 9900` | A client that renders "Save ₹X" from `best_coupon` shows **"Save ₹0"** next to a free-delivery offer. Mobile and web both work around it by reading `available_offers`; any new client will hit it | open — client-side workaround in place, server unfixed |
+| KD-2 | `get_order_details` emits **no** `line_total_cents`, and `order_items` has no such column | `grep -c line_total_cents migrations/20260101000000_place_order_fn.sql` → 0. `20261101` computes `line_total_cents` only inside `price_cart`, not in the read RPC | Order-history line totals fall back to `price_cents * quantity`. That is **correct** — `order_items.price_cents` is server-written from `variants` at order time, not client arithmetic — but it is a derived figure, not the stored one | open — fallback is acceptable; a `line_total_cents` column would make it exact |
+| KD-3 | `coupon_redemptions` has RLS enabled and **zero** policies | `verify-chain.sh` output: `coupon_redemptions rls=true policies=0` | Correct for anon — writes go through `SECURITY DEFINER place_order`. But there is also no **admin read** policy, so nobody can audit coupon redemption without service-role access. For a live promotion engine that is an operational gap | open |
+| KD-4 | `orders.status` is free `text` with **no CHECK**, while `CONTRACT.md` §6 documents a seven-value vocabulary (`confirmed`, `confirmed-cod`, `reserved`, `processing`, `shipped`, `delivered`, `cancelled`) | `schema.sql` `orders` block: `status text default 'confirmed'` | Any string can be written. Fulfilment code cannot rely on the vocabulary it is documented against | open — address with admin order management (Phase B) |
+| KD-5 | `BagScreen`/`CheckoutScreen` render **"Tax — Included in the atelier price"** | Hardcoded string; `orders.tax_cents` → `400` (column does not exist) | MRP-inclusive-of-GST is normal in India, so the claim may be true — but it is a commercial/tax assertion with no field, invoice or GST registration behind it. Must become a recorded decision, not a typed string | open — Phase B (GST line + invoice) |
