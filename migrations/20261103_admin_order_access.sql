@@ -20,10 +20,13 @@
 -- It gates catalogue and storage writes. It gates nothing transactional. This
 -- file closes that.
 --
--- SCOPE: admin READ and UPDATE only.
+-- SCOPE: admin READ and UPDATE only — for GRANTS, it is also a REVOKE.
 --   * No INSERT — orders are created by place_order, never by an admin.
 --   * No DELETE — financial records are not deletable by a UI.
---   * Customer policies are untouched; this only ADDS.
+--   * Customer POLICIES are untouched; this only adds policies. But it does
+--     REVOKE insert/update/delete from anon and authenticated on both tables and
+--     grant back a three-column UPDATE. That is a narrowing of privilege, not an
+--     addition — stated here so the header matches the body.
 --
 -- The customer's own path is unchanged: place_order (SECURITY DEFINER) still
 -- writes both tables, and "users view own" still reads them.
@@ -128,13 +131,25 @@ create policy "Admins update order fulfilment" on public.orders
 -- table to `anon, authenticated`, so a revoke naming only `authenticated` leaves
 -- anon holding table-wide UPDATE. RLS blocks it today (no anon policy on
 -- orders), but defence in depth is cheap and the grant is the mechanism.
-revoke update, insert, delete on public.orders from anon;
-revoke update on public.orders from authenticated;
+-- Both roles, INSERT and DELETE included. 20261031 §5c made order writes
+-- RPC-only; `authenticated` keeping INSERT would contradict that and leave the
+-- door one careless future policy away from "any customer can mint orders".
+-- Also drops anon SELECT: guest order lookup is get_order_details (SECURITY
+-- DEFINER), so anon has no legitimate need to read the table directly. RLS
+-- already returns zero rows, but a grant is a second lock that RLS cannot lose.
+revoke insert, update, delete on public.orders from anon, authenticated;
+revoke select on public.orders from anon;
+grant select on public.orders to authenticated;
 grant update (status, tracking_number, carrier) on public.orders to authenticated;
 
 -- order_items: read-only for admins. Nothing about a line item is editable
 -- after the fact — price and quantity are the audit trail.
-revoke update, insert, delete on public.order_items from authenticated;
+-- Named for BOTH roles, same reasoning as the orders revoke above.
+-- verify-customer-accounts.sql grants insert/update/delete on every table to
+-- `anon, authenticated`; revoking order_items from authenticated alone would
+-- repeat exactly the asymmetry this file warns about one statement earlier.
+revoke insert, update, delete on public.order_items from anon, authenticated;
+revoke select on public.order_items from anon;
 grant select on public.order_items to authenticated;
 
 -- ---------------------------------------------------------------------------

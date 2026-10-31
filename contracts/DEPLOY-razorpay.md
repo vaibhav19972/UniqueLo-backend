@@ -1,0 +1,40 @@
+-- ============================================================================
+-- 20261104_razorpay_payments.sql — deploy note
+--
+-- STATUS: NOT APPLIED to hosted. `verify-chain.sh` proves it builds on a fresh
+-- cluster; that is not the same as "safe to apply". Read this before applying.
+--
+-- WHAT IT DOES: adds one table, `public.payment_intents`. It does not alter
+-- `orders`, so no existing row is rewritten and no backfill runs. That is the
+-- whole reason it is low-risk: every change is additive and touches nothing.
+--
+-- ORDER OF OPERATIONS
+-- -------------------
+-- 1. Apply this migration.
+-- 2. Set the Edge Function secrets (never in the web bundle):
+--        supabase secrets set RAZORPAY_KEY_ID=... RAZORPAY_KEY_SECRET=...
+-- 3. Deploy the two functions:
+--        supabase functions deploy razorpay-create-order
+--        supabase functions deploy razorpay-verify
+-- 4. Set VITE_PAYMENTS_API_URL for the SPA to
+--        https://<project-ref>.supabase.co/functions/v1
+--    and VITE_RAZORPAY_KEY_ID to the PUBLIC key id only.
+--
+-- WHY THE SECRET IS NOT IN THE SPA
+-- --------------------------------
+-- Vite inlines every `VITE_*` variable into the shipped JavaScript. A
+-- `VITE_RAZORPAY_KEY_SECRET` would be readable by anyone who opens devtools, and
+-- would let them create unsigned orders and forge signatures. The key id is
+-- public by design (Razorpay ships it to the browser); the secret is not.
+--
+-- ROLLBACK
+-- --------
+--   drop table if exists public.payment_intents;
+-- Nothing references it, so this is safe even with rows in it — but export the
+-- rows first if any are `captured`, because they are the only record of money
+-- taken.
+--
+-- KNOWN GAP (KD-8): a captured payment whose `place_order` call fails leaves a
+-- `captured` intent with no order. That row is the refund queue. See
+-- contracts/known-defects.md.
+-- ============================================================================

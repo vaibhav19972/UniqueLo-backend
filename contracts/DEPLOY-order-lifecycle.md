@@ -120,6 +120,20 @@ select column_name, is_nullable from information_schema.columns
 Then from a client, `GET /rest/v1/orders?select=tracking_number` must return
 `200` (with `[]` under anon RLS) instead of `400`.
 
+### Post-deploy: run the authorisation battery
+
+```bash
+bash backend/scripts/run-admin-order-access.sh
+```
+
+This is the **only** thing that proves the boundary. It re-applies `20261103`
+itself (so it proves the file that ships, not a retyped copy), then asserts with
+`has_column_privilege` that exactly three columns are updatable, that
+`place_order` and `get_order_details` still work as `anon` and `authenticated`
+after the revoke, that `is_admin()`'s `app_metadata.role` branch works, and that
+neither `shipped`-without-tracking nor tracking-without-carrier can be written.
+It exits non-zero on any failure.
+
 ---
 
 ## After `20261103` — admin order access
@@ -133,6 +147,14 @@ return one row and every save would be refused.
 **Order matters:** apply `20261102` first. `20261103` adds a constraint
 referencing `tracking_number`, and its precondition block raises a named
 `42703` if that column is absent rather than a bare "column does not exist".
+
+> ## 🛑 NEVER run `verify-admin-order-access.sql` against hosted
+>
+> The battery inserts fixtures, calls `place_order` — **which decrements real
+> `variants.quantity`** — and deletes rows. It refuses to start unless the server
+> address is loopback or a unix socket, but that guard is the only thing standing
+> between it and your inventory. Run it via `scripts/run-admin-order-access.sh`,
+> which builds a throwaway cluster. It never touches a remote.
 
 ### Pre-flight (SQL editor or service role — anon cannot see orders)
 
@@ -155,7 +177,8 @@ select grantee, privilege_type
 |---|---|
 | `Admins view all orders` / `Admins view all order items` | `is_admin()` gates SELECT. Customer policies untouched — permissive policies OR together, so a customer still sees only their own |
 | `Admins update order fulfilment` | UPDATE where `is_admin()`, `with check` on identity only |
-| `revoke update on orders from anon, authenticated` + `grant update (status, tracking_number, carrier)` | **The real mechanism.** RLS cannot stop an admin editing `total_cents`; the column grant can |
+| `revoke insert, update, delete on orders from anon, authenticated` + `grant update (status, tracking_number, carrier)` to `authenticated` | **The real mechanism.** RLS cannot stop an admin editing `total_cents`; a column-scoped grant can. INSERT/DELETE are dropped from *both* roles, matching 20261031 §5c's RPC-only rule |
+| `revoke select on orders from anon` (and `on order_items from anon`) + `grant select ... to authenticated` | anon loses direct table read. Guest lookup is `get_order_details` (SECURITY DEFINER) and is unaffected. **This changes an anon `GET /rest/v1/orders` from `200 []` to `401`** — verified safe: web's `Orders.tsx` is gated on a signed-in `user`, so it runs as `authenticated` |
 | `orders_shipped_needs_tracking` | `status='shipped'` now requires an AWB + carrier. `delivered` is exempt so a hand-delivered order can complete |
 
 **KNOWN LIMITATION, by design:** because the grant is column-scoped, an admin

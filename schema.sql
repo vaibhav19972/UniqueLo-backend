@@ -423,6 +423,43 @@ create table if not exists public.coupon_redemptions (
   created_at             timestamptz not null default now()
 );
 
+-- 22. Payment intents (migrations/20261104) — the gateway ledger.
+--
+-- Deliberately NOT columns on `orders`. 20261103 revoked client writes there and
+-- granted back only a three-column admin UPDATE, so a payment_status column would
+-- be writable only by a SECURITY DEFINER function. More importantly, a captured
+-- payment whose order failed to place must OUTLIVE the order — it is the refund
+-- queue — and a column on `orders` has nowhere to live when the order never
+-- exists. `client_order_id` is the client-generated uuid place_order writes as
+-- orders.id, so reconciliation is an equality, not a lookup table.
+--
+-- RLS on with NO policies: service role only, same posture as coupon_redemptions.
+create table if not exists public.payment_intents (
+  id uuid primary key default gen_random_uuid(),
+  -- 'razorpay' today; free text so the next gateway is a row, not a migration.
+  provider text not null default 'razorpay',
+  client_order_id uuid not null,
+  placed_order_id uuid,
+  provider_order_id text unique,
+  provider_payment_id text unique,
+  -- Paise. Identical to the repo's *_cents convention and to Razorpay's unit.
+  amount_cents integer not null check (amount_cents >= 100),
+  currency text not null default 'INR',
+  status text not null default 'created'
+    check (status in ('created', 'authorized', 'captured', 'failed', 'expired')),
+  customer_email text not null,
+  customer_name text,
+  customer_phone text,
+  shipping_address jsonb,
+  coupon_code text,
+  -- The priced cart as created. place_order is called with THIS, never with a
+  -- cart the browser re-submits after the charge.
+  items jsonb not null,
+  failure_reason text,
+  created_at timestamptz not null default now(),
+  captured_at timestamptz
+);
+
 -- ====================================================================
 -- Indexes for High Performance
 -- ====================================================================
@@ -438,6 +475,13 @@ create index if not exists idx_reviews_product on public.reviews(product_slug);
 -- orders.user_id (migrations/20261031). Partial: guest orders are NULL.
 create index if not exists idx_orders_user_id on public.orders(user_id)
   where user_id is not null;
+-- Payment intents (migrations/20261104).
+create index if not exists idx_payment_intents_client_order
+  on public.payment_intents (client_order_id);
+-- The refund/ops queue: any intent with no order, whether or not verify ran.
+create index if not exists idx_payment_intents_orphans
+  on public.payment_intents (created_at desc)
+  where placed_order_id is null;
 
 -- ====================================================================
 -- Row Level Security (RLS)
@@ -454,6 +498,9 @@ alter table public.embroidery_details enable row level security;
 alter table public.newsletter_subscribers enable row level security;
 alter table public.reviews enable row level security;
 alter table public.orders enable row level security;
+-- The payment ledger (migrations/20261104). RLS on, NO policies: deny-all to
+-- anon/authenticated, service role only. Money is never readable from a browser.
+alter table public.payment_intents enable row level security;
 -- The seven tables restored to this baseline on 2026-10-31 came from migrations
 -- that were BORN locked. Leaving them out would make the baseline weaker than
 -- the chain: `admins` would be a readable/writable admin allowlist and
