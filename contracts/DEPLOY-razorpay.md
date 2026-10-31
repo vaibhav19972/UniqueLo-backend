@@ -1,8 +1,19 @@
 -- ============================================================================
 -- 20261104_razorpay_payments.sql — deploy note
 --
--- STATUS: NOT APPLIED to hosted. `verify-chain.sh` proves it builds on a fresh
--- cluster; that is not the same as "safe to apply". Read this before applying.
+-- STATUS: APPLIED to hosted and LIVE (re-measured 2026-11-01).
+--
+-- Evidence (read-only probes against `heimnfjuwmmmejqcjbbd`):
+--   * `GET /rest/v1/payment_intents` -> 401 `42501 permission denied`. The table
+--     EXISTS and RLS refuses anon — which is the correct posture, and is why 401
+--     rather than 404 is the proof.
+--   * `razorpay-create-order` -> 200, creating a real gateway order.
+--   * `razorpay-verify` -> 200, deployed (currently v2 at time of writing).
+--
+-- What follows is the original pre-deploy note, kept because the ORDER OF
+-- OPERATIONS and the rollback are still the runbook if this ever needs
+-- rebuilding. Its "NOT APPLIED" opening was true on 2026-10-31 and is retained
+-- only beneath this banner — do not act on it.
 --
 -- WHAT IT DOES: adds one table, `public.payment_intents`. It does not alter
 -- `orders`, so no existing row is rewritten and no backfill runs. Every change is

@@ -275,12 +275,22 @@ create table if not exists public.orders (
   coupon_code text,
   gift_note text,
   shipping_address jsonb,
+  -- Payment identity (migrations/20261105). `payment_method` is derived
+  -- server-side by place_order from the same v_payment that computes the COD
+  -- surcharge and the status default; client values are normalised, not trusted.
+  -- `payment_ref` is the gateway payment id, written ONLY by razorpay-verify
+  -- under the service role — never by place_order, so a client cannot forge one.
+  payment_method text not null default 'prepaid',
+  payment_ref    text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   -- CONTRACT.md §6 vocabulary, enforced (migrations/20261102). 'pending' is
   -- included for a prepaid reservation that has not been paid yet.
   constraint orders_status_valid
     check (status in ('pending', 'reserved', 'confirmed', 'confirmed-cod',
                       'processing', 'shipped', 'delivered', 'cancelled')),
+  -- Payment vocabulary (migrations/20261105).
+  constraint orders_payment_method_valid
+    check (payment_method in ('cod', 'prepaid')),
   -- A tracking number without a carrier is unusable, and vice versa.
   constraint orders_tracking_pairs_with_carrier
     check ((tracking_number is null and carrier is null)

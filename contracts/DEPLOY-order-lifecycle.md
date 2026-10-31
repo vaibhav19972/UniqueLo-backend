@@ -1,8 +1,23 @@
 # DEPLOY — order lifecycle (`20261102_order_lifecycle.sql`)
 
-**Status: NOT DEPLOYED.** Written and PROVEN LOCALLY only. The hosted project
-(`heimnfjuwmmmejqcjbbd`) still has free-text `orders.status` and **no**
-`tracking_number` / `carrier` columns.
+**Status: PARTIALLY DEPLOYED — corrected 2026-11-01.** This note previously said
+"NOT DEPLOYED", and a later pass over-corrected it to "DEPLOYED". Both were
+wrong, in opposite directions. What hosted actually has, measured:
+
+| Column | Hosted |
+|---|---|
+| `orders.status` | **present** — `200` |
+| `orders.cod_fee_cents` | **present** — `200` (that is `20261101`, not this one) |
+| `orders.tracking_number` | **ABSENT** — `400 42703 "column orders.tracking_number does not exist"` |
+| `orders.carrier` | **ABSENT** — `400 42703` |
+
+So `20261102` has **not** been applied. `orders_status_valid` may exist from
+elsewhere but the two columns this migration is the sole source of do not, and
+that is the decisive measurement — the migration is atomic, so if the columns are
+missing the whole file is missing.
+
+**Nothing built against this schema works on hosted today.** Any admin
+fulfilment code that reads `tracking_number` gets `400` in production.
 
 Read this before writing any admin order-management code: `GET
 /rest/v1/orders?select=tracking_number` returns **`400`** against hosted today.

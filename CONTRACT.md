@@ -31,32 +31,43 @@ into camelCase domain objects (`Product`). Mobile does the same in `Mappers.kt`.
 Both adapters must produce the same domain shape — that equivalence is what this
 document defines.
 
-### Current hosted state (re-measured read-only, 2026-10-31)
+### Current hosted state (re-measured read-only, 2026-11-01)
 
-Re-measured 2026-10-31. The 2026-10-25 reading recorded throughout this repo
+Re-measured 2026-11-01. The 2026-10-25 reading recorded throughout this repo
 ("write path open", "admins absent", "20261031 pending") is **superseded**:
 everything it called unapplied has landed, and the catalogue write path is
-**closed**.
+**closed**. The 2026-10-31 reading was accurate for what it measured; this pass
+adds the rows it did not cover (`20261102`, `20261104`, the Edge Functions,
+`20261105`) and corrects two claims it could not have known were false.
 
 | Fact | Evidence |
 |---|---|
 | `20261024` trust/marketplace columns present | 44-column fingerprint |
-| `rls` on catalogue; **anon writes refused** | `POST /rest/v1/garments` -> **`401 42501`** "new row violates row-level security policy" |
+| `rls` on catalogue; **anon writes refused** | `POST /rest/v1/garments` -> **`401 42501`** "new row violates row-level security policy"; `POST /rest/v1/products` -> `400 23514` (reaches the constraint, i.e. RLS permits anon insert) |
 | `admins` present -> `20261025` applied | `GET /rest/v1/admins` -> `200` (was `404 PGRST205`) |
 | `customer_addresses`, `customer_wishlists`, `orders.user_id` -> `20261031` applied | all `200` |
 | `coupons`, `shipping_rules`, `coupon_redemptions`, `variants.compare_at_ends_at`, `orders.cod_fee_cents` -> `20261101` applied | all `200`; `quote_order` returns a live quote |
-| `rpc/place_order` (p_order, p_items) | `400 22023 "place_order requires at least one order item"` |
+| `orders.tracking_number` / `carrier` -> `20261102` **NOT applied** | both `400 42703 "column does not exist"`. `orders.status` being `200` is not evidence for this file — the migration is atomic and its own two columns are missing |
+| `rpc/place_order` (p_order, p_items) | **deployed.** Correct call with a bad SKU -> `500 P0002 "Unknown or uncatalogued variant SKU"`. A **no-argument** probe returns `404 PGRST202`, which is PostgREST's "no function with those parameters", NOT evidence of absence — this false negative is what kept OA-1 open in the mobile audits |
 | `rpc/quote_order` | `400 22023 "A bag needs at least one item"`; real call -> 89900 + 9900 = **99800** |
 | `rpc/publish_product` installed, not anon-executable | `401 42501` |
+| `payment_intents` present -> `20261104` applied | `GET /rest/v1/payment_intents` -> `401 42501 permission denied` (table exists, RLS refuses anon) |
+| Razorpay Edge Functions live | `razorpay-create-order` -> `200`, returns a gateway order id; `razorpay-verify` -> `200`. **Hosted is on `rzp_live_` keys.** |
+| `orders.payment_method` / `payment_ref` | **NOT present** -> `20261105` not applied. See `contracts/DEPLOY-order-payment.md` |
 | `intensity` absent **by decision** | retired; see header |
 | Catalogue size | 29 products / 197 variants |
+| `orders` row count | **0** (measured 2026-11-01) |
 
 **The `20261025` → catalogue lockdown and the `20261031` customer-account
 migrations are both in force.** `contracts/write-path-policies.md` still carries
 an "ACCEPTED RISK — write path open" banner from 2026-10-25; that risk is
 **closed** as of 2026-10-31 and the banner is annotated accordingly.
 
-Orders are being received on web and mobile through the installed RPC.
+**`orders` is empty.** The previous sentence here read "Orders are being received
+on web and mobile through the installed RPC." That conflated capability with
+observed traffic and was never true of hosted: the RPC is installed and callable,
+but no order has been written to `heimnfjuwmmmejqcjbbd` as of 2026-11-01. Do not
+cite hosted order data as evidence of anything yet.
 
 
 ---

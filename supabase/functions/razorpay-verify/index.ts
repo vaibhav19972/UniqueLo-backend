@@ -314,6 +314,35 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   console.log(`[razorpay-verify] Successfully verified payment ${razorpay_payment_id} and placed order ${orderId}`);
 
+  // Stamp the gateway reference onto the ORDER, not just the intent.
+  //
+  // This is the one write `place_order` cannot do. That function runs with the
+  // caller's JWT, so a `payment_ref` arriving in its payload would be a client
+  // assertion — anyone could stamp a forged or borrowed `pay_...` id onto their
+  // own order. Here the signature and the captured status are already proven and
+  // the write is service-role, so the value is evidence rather than a claim.
+  //
+  // `idx_orders_payment_ref` makes this a one-payment-one-order guarantee: if the
+  // same payment ever reached a second order, this update would violate the
+  // unique index instead of quietly succeeding.
+  //
+  // Deliberately after place_order: a stamp on an order that was never written
+  // would leave a payment_ref pointing at nothing, which is worse than a NULL.
+  const { error: stampError } = await admin
+    .from('orders')
+    .update({ payment_ref: razorpay_payment_id })
+    .eq('id', orderId);
+
+  if (stampError) {
+    // The order EXISTS and the money is captured — do not fail the response and
+    // invite a retry. Record the gap on the intent so it is findable, and say so
+    // in the logs. `payment_intents.provider_payment_id` is the fallback path.
+    console.error(
+      `[razorpay-verify] Could not stamp payment_ref on order ${orderId}:`,
+      stampError
+    );
+  }
+
   // Guarded so two concurrent verifies cannot both win the write.
   await admin
     .from('payment_intents')
@@ -322,7 +351,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       provider_payment_id: razorpay_payment_id,
       captured_at: intent.captured_at ?? new Date().toISOString(),
       placed_order_id: orderId,
-      failure_reason: null,
+      failure_reason: stampError
+        ? `order ${orderId} placed but payment_ref not stamped: ${stampError.message}`
+        : null,
     })
     .eq('id', intent.id)
     .is('placed_order_id', null);
