@@ -43,7 +43,7 @@ adds the rows it did not cover (`20261102`, `20261104`, the Edge Functions,
 | Fact | Evidence |
 |---|---|
 | `20261024` trust/marketplace columns present | 44-column fingerprint |
-| `rls` on catalogue; **anon writes refused** | `POST /rest/v1/garments` -> **`401 42501`** "new row violates row-level security policy"; `POST /rest/v1/products` -> `400 23514` (reaches the constraint, i.e. RLS permits anon insert) |
+| `rls` on catalogue; **anon writes refused** | `POST /rest/v1/garments` -> **`401 42501`** "new row violates row-level security policy". `POST /rest/v1/products` -> `400 23514` (the BEFORE trigger speaks first) — **but RLS refuses that INSERT too**: proven offline by dropping the triggers and retrying as `anon`, which yields "new row violates row-level security policy", with a superuser control insert succeeding. The trigger error is simply the first gate to answer, because Postgres runs BEFORE ROW triggers ahead of `WITH CHECK`. **No anon write hole.** |
 | `admins` present -> `20261025` applied | `GET /rest/v1/admins` -> `200` (was `404 PGRST205`) |
 | `customer_addresses`, `customer_wishlists`, `orders.user_id` -> `20261031` applied | all `200` |
 | `coupons`, `shipping_rules`, `coupon_redemptions`, `variants.compare_at_ends_at`, `orders.cod_fee_cents` -> `20261101` applied | all `200`; `quote_order` returns a live quote |
