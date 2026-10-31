@@ -167,11 +167,22 @@ create table if not exists public.variants (
   size text not null,
   price_cents integer not null,
   compare_at_price_cents integer,
+  -- MRP expiry (migrations/20261101): a dated markdown stops being claimable
+  -- once this passes. NULL = no expiry. Added to the baseline so a fresh build
+  -- matches the hosted shape, same rationale as the trust columns above.
+  compare_at_ends_at timestamp with time zone,
   status text default 'in-stock' check (status in ('in-stock', 'low-stock', 'out-of-stock')),
   quantity integer default 10,
   -- physical scannable identifier (migrations/20261024); unique when present
   barcode text unique,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  -- An MRP at or below the selling price is not a discount; an expiry with no
+  -- MRP is meaningless. Enforced here so no admin paste or script can create a
+  -- fabricated markdown claim.
+  constraint variants_mrp_exceeds_price
+    check (compare_at_price_cents is null or compare_at_price_cents > price_cents),
+  constraint variants_mrp_ends_needs_mrp
+    check (compare_at_ends_at is null or compare_at_price_cents is not null)
 );
 
 -- 8. Product Images Table
@@ -226,6 +237,9 @@ create table if not exists public.orders (
   subtotal_cents integer not null,
   discount_cents integer default 0,
   shipping_cents integer default 0,
+  -- COD surcharge (migrations/20261101). Kept separate from shipping_cents so
+  -- courier cost is never misstated and COD-vs-prepaid margin stays analyzable.
+  cod_fee_cents integer not null default 0,
   total_cents integer not null,
   coupon_code text,
   gift_note text,

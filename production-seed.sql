@@ -217,8 +217,8 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('arch-jaal-scarf', '/images/products/embroidered-silk-scarf-1.jpg', 'Arch Jaal Silk Scarf — lattice macro', NULL, 1);
 
 delete from public.variants where product_slug = 'arch-jaal-scarf';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('AJS-OS-GLD', 'arch-jaal-scarf', 'Ivory & Gold', '#efe4c8', 'OS', 189900, NULL, 'in-stock', 11, '8901917966729');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('AJS-OS-GLD', 'arch-jaal-scarf', 'Ivory & Gold', '#efe4c8', 'OS', 189900, NULL, NULL, 'in-stock', 11, '8901917966729');
 
 delete from public.embroidery_details where product_slug = 'arch-jaal-scarf';
 insert into public.embroidery_details (
@@ -375,14 +375,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('anime-eye-sweatshirt', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/anime-eye-sweatshirt-6.jpg', 'Anime Eye Sweatshirt — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'anime-eye-sweatshirt';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-S68C-CREAM-XS', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'XS', 149900, NULL, 'in-stock', 10, '2009462151540'),
-  ('UL-S68C-CREAM-S', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'S', 149900, NULL, 'in-stock', 10, '2009462151541'),
-  ('UL-S68C-CREAM-M', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'M', 149900, NULL, 'in-stock', 10, '2009462151542'),
-  ('UL-S68C-CREAM-L', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'L', 149900, NULL, 'in-stock', 10, '2009462151543'),
-  ('UL-S68C-CREAM-XL', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'XL', 149900, NULL, 'in-stock', 10, '2009462151544'),
-  ('UL-S68C-CREAM-2XL', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', '2XL', 149900, NULL, 'in-stock', 10, '2009462151545'),
-  ('UL-S68C-CREAM-3XL', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', '3XL', 149900, NULL, 'in-stock', 10, '2009462151546');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-S68C-CREAM-XS', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2009462151540'),
+  ('UL-S68C-CREAM-S', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'S', 149900, NULL, NULL, 'in-stock', 10, '2009462151541'),
+  ('UL-S68C-CREAM-M', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'M', 149900, NULL, NULL, 'in-stock', 10, '2009462151542'),
+  ('UL-S68C-CREAM-L', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'L', 149900, NULL, NULL, 'in-stock', 10, '2009462151543'),
+  ('UL-S68C-CREAM-XL', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2009462151544'),
+  ('UL-S68C-CREAM-2XL', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2009462151545'),
+  ('UL-S68C-CREAM-3XL', 'anime-eye-sweatshirt', 'Cream', '#f2ece0', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2009462151546');
 
 delete from public.embroidery_details where product_slug = 'anime-eye-sweatshirt';
 insert into public.embroidery_details (
@@ -545,14 +545,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('anime-hoodie', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/anime-hoodie-12.jpg', 'Anime Hoodie — detail view 6', NULL, 11);
 
 delete from public.variants where product_slug = 'anime-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-H9C9-BLACK-XS', 'anime-hoodie', 'Black', '#111111', 'XS', 149900, NULL, 'in-stock', 10, '2005245090500'),
-  ('UL-H9C9-BLACK-S', 'anime-hoodie', 'Black', '#111111', 'S', 149900, NULL, 'in-stock', 10, '2005245090501'),
-  ('UL-H9C9-BLACK-M', 'anime-hoodie', 'Black', '#111111', 'M', 149900, NULL, 'in-stock', 10, '2005245090502'),
-  ('UL-H9C9-BLACK-L', 'anime-hoodie', 'Black', '#111111', 'L', 149900, NULL, 'in-stock', 10, '2005245090503'),
-  ('UL-H9C9-BLACK-XL', 'anime-hoodie', 'Black', '#111111', 'XL', 149900, NULL, 'in-stock', 10, '2005245090504'),
-  ('UL-H9C9-BLACK-2XL', 'anime-hoodie', 'Black', '#111111', '2XL', 149900, NULL, 'in-stock', 10, '2005245090505'),
-  ('UL-H9C9-BLACK-3XL', 'anime-hoodie', 'Black', '#111111', '3XL', 149900, NULL, 'in-stock', 10, '2005245090506');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-H9C9-BLACK-XS', 'anime-hoodie', 'Black', '#111111', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2005245090500'),
+  ('UL-H9C9-BLACK-S', 'anime-hoodie', 'Black', '#111111', 'S', 149900, NULL, NULL, 'in-stock', 10, '2005245090501'),
+  ('UL-H9C9-BLACK-M', 'anime-hoodie', 'Black', '#111111', 'M', 149900, NULL, NULL, 'in-stock', 10, '2005245090502'),
+  ('UL-H9C9-BLACK-L', 'anime-hoodie', 'Black', '#111111', 'L', 149900, NULL, NULL, 'in-stock', 10, '2005245090503'),
+  ('UL-H9C9-BLACK-XL', 'anime-hoodie', 'Black', '#111111', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2005245090504'),
+  ('UL-H9C9-BLACK-2XL', 'anime-hoodie', 'Black', '#111111', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2005245090505'),
+  ('UL-H9C9-BLACK-3XL', 'anime-hoodie', 'Black', '#111111', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2005245090506');
 
 delete from public.embroidery_details where product_slug = 'anime-hoodie';
 insert into public.embroidery_details (
@@ -709,14 +709,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ascendant-cream-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/almost-gods-cream-tee-6.jpg', 'Ascendant Cream Tee — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'ascendant-cream-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-TC51-ECRU-XS', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'XS', 89900, NULL, 'in-stock', 10, '2006491294300'),
-  ('UL-TC51-ECRU-S', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'S', 89900, NULL, 'in-stock', 10, '2006491294301'),
-  ('UL-TC51-ECRU-M', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'M', 89900, NULL, 'in-stock', 10, '2006491294302'),
-  ('UL-TC51-ECRU-L', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'L', 89900, NULL, 'in-stock', 10, '2006491294303'),
-  ('UL-TC51-ECRU-XL', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'XL', 89900, NULL, 'in-stock', 10, '2006491294304'),
-  ('UL-TC51-ECRU-2XL', 'ascendant-cream-tee', 'Ecru', '#efe9dc', '2XL', 89900, NULL, 'in-stock', 10, '2006491294305'),
-  ('UL-TC51-ECRU-3XL', 'ascendant-cream-tee', 'Ecru', '#efe9dc', '3XL', 89900, NULL, 'in-stock', 10, '2006491294306');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-TC51-ECRU-XS', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2006491294300'),
+  ('UL-TC51-ECRU-S', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'S', 89900, NULL, NULL, 'in-stock', 10, '2006491294301'),
+  ('UL-TC51-ECRU-M', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'M', 89900, NULL, NULL, 'in-stock', 10, '2006491294302'),
+  ('UL-TC51-ECRU-L', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'L', 89900, NULL, NULL, 'in-stock', 10, '2006491294303'),
+  ('UL-TC51-ECRU-XL', 'ascendant-cream-tee', 'Ecru', '#efe9dc', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2006491294304'),
+  ('UL-TC51-ECRU-2XL', 'ascendant-cream-tee', 'Ecru', '#efe9dc', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2006491294305'),
+  ('UL-TC51-ECRU-3XL', 'ascendant-cream-tee', 'Ecru', '#efe9dc', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2006491294306');
 
 delete from public.embroidery_details where product_slug = 'ascendant-cream-tee';
 insert into public.embroidery_details (
@@ -879,14 +879,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('black-gold-embroidered-blouse', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/black-gold-embroidered-blouse-12.jpg', 'Black & Gold Embroidered Blouse — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'black-gold-embroidered-blouse';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-B0CF-BLACK-XS', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'XS', 119900, NULL, 'in-stock', 10, '2005519496590'),
-  ('UL-B0CF-BLACK-S', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'S', 119900, NULL, 'in-stock', 10, '2005519496591'),
-  ('UL-B0CF-BLACK-M', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'M', 119900, NULL, 'in-stock', 10, '2005519496592'),
-  ('UL-B0CF-BLACK-L', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'L', 119900, NULL, 'in-stock', 10, '2005519496593'),
-  ('UL-B0CF-BLACK-XL', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'XL', 119900, NULL, 'in-stock', 10, '2005519496594'),
-  ('UL-B0CF-BLACK-2XL', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', '2XL', 119900, NULL, 'in-stock', 10, '2005519496595'),
-  ('UL-B0CF-BLACK-3XL', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', '3XL', 119900, NULL, 'in-stock', 10, '2005519496596');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-B0CF-BLACK-XS', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2005519496590'),
+  ('UL-B0CF-BLACK-S', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'S', 119900, NULL, NULL, 'in-stock', 10, '2005519496591'),
+  ('UL-B0CF-BLACK-M', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'M', 119900, NULL, NULL, 'in-stock', 10, '2005519496592'),
+  ('UL-B0CF-BLACK-L', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'L', 119900, NULL, NULL, 'in-stock', 10, '2005519496593'),
+  ('UL-B0CF-BLACK-XL', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2005519496594'),
+  ('UL-B0CF-BLACK-2XL', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2005519496595'),
+  ('UL-B0CF-BLACK-3XL', 'black-gold-embroidered-blouse', 'Black', '#0e0e0e', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2005519496596');
 
 delete from public.embroidery_details where product_slug = 'black-gold-embroidered-blouse';
 insert into public.embroidery_details (
@@ -1049,14 +1049,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('black-spider-emblem-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/black-spider-emblem-tee-12.jpg', 'Black Spider Emblem Tee — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'black-spider-emblem-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T9F8-WASHED-XS', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'XS', 89900, NULL, 'in-stock', 10, '2005455562620'),
-  ('UL-T9F8-WASHED-S', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'S', 89900, NULL, 'in-stock', 10, '2005455562621'),
-  ('UL-T9F8-WASHED-M', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'M', 89900, NULL, 'in-stock', 10, '2005455562622'),
-  ('UL-T9F8-WASHED-L', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'L', 89900, NULL, 'in-stock', 10, '2005455562623'),
-  ('UL-T9F8-WASHED-XL', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'XL', 89900, NULL, 'in-stock', 10, '2005455562624'),
-  ('UL-T9F8-WASHED-2XL', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', '2XL', 89900, NULL, 'in-stock', 10, '2005455562625'),
-  ('UL-T9F8-WASHED-3XL', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', '3XL', 89900, NULL, 'in-stock', 10, '2005455562626');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T9F8-WASHED-XS', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2005455562620'),
+  ('UL-T9F8-WASHED-S', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'S', 89900, NULL, NULL, 'in-stock', 10, '2005455562621'),
+  ('UL-T9F8-WASHED-M', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'M', 89900, NULL, NULL, 'in-stock', 10, '2005455562622'),
+  ('UL-T9F8-WASHED-L', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'L', 89900, NULL, NULL, 'in-stock', 10, '2005455562623'),
+  ('UL-T9F8-WASHED-XL', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2005455562624'),
+  ('UL-T9F8-WASHED-2XL', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2005455562625'),
+  ('UL-T9F8-WASHED-3XL', 'black-spider-emblem-tee', 'Washed Black', '#2b2b2b', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2005455562626');
 
 delete from public.embroidery_details where product_slug = 'black-spider-emblem-tee';
 insert into public.embroidery_details (
@@ -1219,14 +1219,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('charcoal-kurta', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/charcoal-kurta-12.jpg', 'Charcoal Embroidered Kurta — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'charcoal-kurta';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-K7E4-CHARCO-XS', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'XS', 119900, NULL, 'in-stock', 10, '2000137445940'),
-  ('UL-K7E4-CHARCO-S', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'S', 119900, NULL, 'in-stock', 10, '2000137445941'),
-  ('UL-K7E4-CHARCO-M', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'M', 119900, NULL, 'in-stock', 10, '2000137445942'),
-  ('UL-K7E4-CHARCO-L', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'L', 119900, NULL, 'in-stock', 10, '2000137445943'),
-  ('UL-K7E4-CHARCO-XL', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'XL', 119900, NULL, 'in-stock', 10, '2000137445944'),
-  ('UL-K7E4-CHARCO-2XL', 'charcoal-kurta', 'Charcoal', '#3a3a3c', '2XL', 119900, NULL, 'in-stock', 10, '2000137445945'),
-  ('UL-K7E4-CHARCO-3XL', 'charcoal-kurta', 'Charcoal', '#3a3a3c', '3XL', 119900, NULL, 'in-stock', 10, '2000137445946');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-K7E4-CHARCO-XS', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2000137445940'),
+  ('UL-K7E4-CHARCO-S', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'S', 119900, NULL, NULL, 'in-stock', 10, '2000137445941'),
+  ('UL-K7E4-CHARCO-M', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'M', 119900, NULL, NULL, 'in-stock', 10, '2000137445942'),
+  ('UL-K7E4-CHARCO-L', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'L', 119900, NULL, NULL, 'in-stock', 10, '2000137445943'),
+  ('UL-K7E4-CHARCO-XL', 'charcoal-kurta', 'Charcoal', '#3a3a3c', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2000137445944'),
+  ('UL-K7E4-CHARCO-2XL', 'charcoal-kurta', 'Charcoal', '#3a3a3c', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2000137445945'),
+  ('UL-K7E4-CHARCO-3XL', 'charcoal-kurta', 'Charcoal', '#3a3a3c', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2000137445946');
 
 delete from public.embroidery_details where product_slug = 'charcoal-kurta';
 insert into public.embroidery_details (
@@ -1389,14 +1389,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('charcoal-spider-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/charcoal-spider-tee-12.jpg', 'Charcoal Spider Tee — detail view 6', NULL, 11);
 
 delete from public.variants where product_slug = 'charcoal-spider-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T3D7-CHARCO-XS', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'XS', 89900, NULL, 'in-stock', 10, '2005637091750'),
-  ('UL-T3D7-CHARCO-S', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'S', 89900, NULL, 'in-stock', 10, '2005637091751'),
-  ('UL-T3D7-CHARCO-M', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'M', 89900, NULL, 'in-stock', 10, '2005637091752'),
-  ('UL-T3D7-CHARCO-L', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'L', 89900, NULL, 'in-stock', 10, '2005637091753'),
-  ('UL-T3D7-CHARCO-XL', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'XL', 89900, NULL, 'in-stock', 10, '2005637091754'),
-  ('UL-T3D7-CHARCO-2XL', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', '2XL', 89900, NULL, 'in-stock', 10, '2005637091755'),
-  ('UL-T3D7-CHARCO-3XL', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', '3XL', 89900, NULL, 'in-stock', 10, '2005637091756');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T3D7-CHARCO-XS', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2005637091750'),
+  ('UL-T3D7-CHARCO-S', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'S', 89900, NULL, NULL, 'in-stock', 10, '2005637091751'),
+  ('UL-T3D7-CHARCO-M', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'M', 89900, NULL, NULL, 'in-stock', 10, '2005637091752'),
+  ('UL-T3D7-CHARCO-L', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'L', 89900, NULL, NULL, 'in-stock', 10, '2005637091753'),
+  ('UL-T3D7-CHARCO-XL', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2005637091754'),
+  ('UL-T3D7-CHARCO-2XL', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2005637091755'),
+  ('UL-T3D7-CHARCO-3XL', 'charcoal-spider-tee', 'Charcoal Acid Wash', '#34343a', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2005637091756');
 
 delete from public.embroidery_details where product_slug = 'charcoal-spider-tee';
 insert into public.embroidery_details (
@@ -1559,14 +1559,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('cherry-blossom-hoodie', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/cherry-blossom-hoodie-12.jpg', 'Cherry Blossom Hoodie — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'cherry-blossom-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-H543-WHITE-XS', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'XS', 149900, NULL, 'in-stock', 10, '2005203079980'),
-  ('UL-H543-WHITE-S', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'S', 149900, NULL, 'in-stock', 10, '2005203079981'),
-  ('UL-H543-WHITE-M', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'M', 149900, NULL, 'in-stock', 10, '2005203079982'),
-  ('UL-H543-WHITE-L', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'L', 149900, NULL, 'in-stock', 10, '2005203079983'),
-  ('UL-H543-WHITE-XL', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'XL', 149900, NULL, 'in-stock', 10, '2005203079984'),
-  ('UL-H543-WHITE-2XL', 'cherry-blossom-hoodie', 'White', '#fbfbf9', '2XL', 149900, NULL, 'in-stock', 10, '2005203079985'),
-  ('UL-H543-WHITE-3XL', 'cherry-blossom-hoodie', 'White', '#fbfbf9', '3XL', 149900, NULL, 'in-stock', 10, '2005203079986');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-H543-WHITE-XS', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2005203079980'),
+  ('UL-H543-WHITE-S', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'S', 149900, NULL, NULL, 'in-stock', 10, '2005203079981'),
+  ('UL-H543-WHITE-M', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'M', 149900, NULL, NULL, 'in-stock', 10, '2005203079982'),
+  ('UL-H543-WHITE-L', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'L', 149900, NULL, NULL, 'in-stock', 10, '2005203079983'),
+  ('UL-H543-WHITE-XL', 'cherry-blossom-hoodie', 'White', '#fbfbf9', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2005203079984'),
+  ('UL-H543-WHITE-2XL', 'cherry-blossom-hoodie', 'White', '#fbfbf9', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2005203079985'),
+  ('UL-H543-WHITE-3XL', 'cherry-blossom-hoodie', 'White', '#fbfbf9', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2005203079986');
 
 delete from public.embroidery_details where product_slug = 'cherry-blossom-hoodie';
 insert into public.embroidery_details (
@@ -1729,14 +1729,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('cherry-blossom-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/cherry-blossom-tee-12.jpg', 'Cherry Blossom Tee — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'cherry-blossom-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T5B9-WHITE-XS', 'cherry-blossom-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, 'in-stock', 10, '2008342025240'),
-  ('UL-T5B9-WHITE-S', 'cherry-blossom-tee', 'White', '#fbfbf9', 'S', 89900, NULL, 'in-stock', 10, '2008342025241'),
-  ('UL-T5B9-WHITE-M', 'cherry-blossom-tee', 'White', '#fbfbf9', 'M', 89900, NULL, 'in-stock', 10, '2008342025242'),
-  ('UL-T5B9-WHITE-L', 'cherry-blossom-tee', 'White', '#fbfbf9', 'L', 89900, NULL, 'in-stock', 10, '2008342025243'),
-  ('UL-T5B9-WHITE-XL', 'cherry-blossom-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, 'in-stock', 10, '2008342025244'),
-  ('UL-T5B9-WHITE-2XL', 'cherry-blossom-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, 'in-stock', 10, '2008342025245'),
-  ('UL-T5B9-WHITE-3XL', 'cherry-blossom-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, 'in-stock', 10, '2008342025246');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T5B9-WHITE-XS', 'cherry-blossom-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2008342025240'),
+  ('UL-T5B9-WHITE-S', 'cherry-blossom-tee', 'White', '#fbfbf9', 'S', 89900, NULL, NULL, 'in-stock', 10, '2008342025241'),
+  ('UL-T5B9-WHITE-M', 'cherry-blossom-tee', 'White', '#fbfbf9', 'M', 89900, NULL, NULL, 'in-stock', 10, '2008342025242'),
+  ('UL-T5B9-WHITE-L', 'cherry-blossom-tee', 'White', '#fbfbf9', 'L', 89900, NULL, NULL, 'in-stock', 10, '2008342025243'),
+  ('UL-T5B9-WHITE-XL', 'cherry-blossom-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2008342025244'),
+  ('UL-T5B9-WHITE-2XL', 'cherry-blossom-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2008342025245'),
+  ('UL-T5B9-WHITE-3XL', 'cherry-blossom-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2008342025246');
 
 delete from public.embroidery_details where product_slug = 'cherry-blossom-tee';
 insert into public.embroidery_details (
@@ -1893,14 +1893,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('cloud-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/cloud-tee-6.jpg', 'Cloud Tee — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'cloud-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T58D-WHITE-XS', 'cloud-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, 'in-stock', 10, '2009077295950'),
-  ('UL-T58D-WHITE-S', 'cloud-tee', 'White', '#fbfbf9', 'S', 89900, NULL, 'in-stock', 10, '2009077295951'),
-  ('UL-T58D-WHITE-M', 'cloud-tee', 'White', '#fbfbf9', 'M', 89900, NULL, 'in-stock', 10, '2009077295952'),
-  ('UL-T58D-WHITE-L', 'cloud-tee', 'White', '#fbfbf9', 'L', 89900, NULL, 'in-stock', 10, '2009077295953'),
-  ('UL-T58D-WHITE-XL', 'cloud-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, 'in-stock', 10, '2009077295954'),
-  ('UL-T58D-WHITE-2XL', 'cloud-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, 'in-stock', 10, '2009077295955'),
-  ('UL-T58D-WHITE-3XL', 'cloud-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, 'in-stock', 10, '2009077295956');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T58D-WHITE-XS', 'cloud-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2009077295950'),
+  ('UL-T58D-WHITE-S', 'cloud-tee', 'White', '#fbfbf9', 'S', 89900, NULL, NULL, 'in-stock', 10, '2009077295951'),
+  ('UL-T58D-WHITE-M', 'cloud-tee', 'White', '#fbfbf9', 'M', 89900, NULL, NULL, 'in-stock', 10, '2009077295952'),
+  ('UL-T58D-WHITE-L', 'cloud-tee', 'White', '#fbfbf9', 'L', 89900, NULL, NULL, 'in-stock', 10, '2009077295953'),
+  ('UL-T58D-WHITE-XL', 'cloud-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2009077295954'),
+  ('UL-T58D-WHITE-2XL', 'cloud-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2009077295955'),
+  ('UL-T58D-WHITE-3XL', 'cloud-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2009077295956');
 
 delete from public.embroidery_details where product_slug = 'cloud-tee';
 insert into public.embroidery_details (
@@ -2057,14 +2057,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('colorful-face-hoodie', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/colorful-face-hoodie-6.jpg', 'Colorful Face Hoodie — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'colorful-face-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-H265-BLACK-XS', 'colorful-face-hoodie', 'Black', '#111111', 'XS', 149900, NULL, 'in-stock', 10, '2000257483970'),
-  ('UL-H265-BLACK-S', 'colorful-face-hoodie', 'Black', '#111111', 'S', 149900, NULL, 'in-stock', 10, '2000257483971'),
-  ('UL-H265-BLACK-M', 'colorful-face-hoodie', 'Black', '#111111', 'M', 149900, NULL, 'in-stock', 10, '2000257483972'),
-  ('UL-H265-BLACK-L', 'colorful-face-hoodie', 'Black', '#111111', 'L', 149900, NULL, 'in-stock', 10, '2000257483973'),
-  ('UL-H265-BLACK-XL', 'colorful-face-hoodie', 'Black', '#111111', 'XL', 149900, NULL, 'in-stock', 10, '2000257483974'),
-  ('UL-H265-BLACK-2XL', 'colorful-face-hoodie', 'Black', '#111111', '2XL', 149900, NULL, 'in-stock', 10, '2000257483975'),
-  ('UL-H265-BLACK-3XL', 'colorful-face-hoodie', 'Black', '#111111', '3XL', 149900, NULL, 'in-stock', 10, '2000257483976');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-H265-BLACK-XS', 'colorful-face-hoodie', 'Black', '#111111', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2000257483970'),
+  ('UL-H265-BLACK-S', 'colorful-face-hoodie', 'Black', '#111111', 'S', 149900, NULL, NULL, 'in-stock', 10, '2000257483971'),
+  ('UL-H265-BLACK-M', 'colorful-face-hoodie', 'Black', '#111111', 'M', 149900, NULL, NULL, 'in-stock', 10, '2000257483972'),
+  ('UL-H265-BLACK-L', 'colorful-face-hoodie', 'Black', '#111111', 'L', 149900, NULL, NULL, 'in-stock', 10, '2000257483973'),
+  ('UL-H265-BLACK-XL', 'colorful-face-hoodie', 'Black', '#111111', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2000257483974'),
+  ('UL-H265-BLACK-2XL', 'colorful-face-hoodie', 'Black', '#111111', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2000257483975'),
+  ('UL-H265-BLACK-3XL', 'colorful-face-hoodie', 'Black', '#111111', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2000257483976');
 
 delete from public.embroidery_details where product_slug = 'colorful-face-hoodie';
 insert into public.embroidery_details (
@@ -2221,14 +2221,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('cream-anime-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/cream-anime-tee-6.jpg', 'Cream Anime Tee — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'cream-anime-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T843-CREAM-XS', 'cream-anime-tee', 'Cream', '#f2ece0', 'XS', 89900, NULL, 'in-stock', 10, '2007035948020'),
-  ('UL-T843-CREAM-S', 'cream-anime-tee', 'Cream', '#f2ece0', 'S', 89900, NULL, 'in-stock', 10, '2007035948021'),
-  ('UL-T843-CREAM-M', 'cream-anime-tee', 'Cream', '#f2ece0', 'M', 89900, NULL, 'in-stock', 10, '2007035948022'),
-  ('UL-T843-CREAM-L', 'cream-anime-tee', 'Cream', '#f2ece0', 'L', 89900, NULL, 'in-stock', 10, '2007035948023'),
-  ('UL-T843-CREAM-XL', 'cream-anime-tee', 'Cream', '#f2ece0', 'XL', 89900, NULL, 'in-stock', 10, '2007035948024'),
-  ('UL-T843-CREAM-2XL', 'cream-anime-tee', 'Cream', '#f2ece0', '2XL', 89900, NULL, 'in-stock', 10, '2007035948025'),
-  ('UL-T843-CREAM-3XL', 'cream-anime-tee', 'Cream', '#f2ece0', '3XL', 89900, NULL, 'in-stock', 10, '2007035948026');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T843-CREAM-XS', 'cream-anime-tee', 'Cream', '#f2ece0', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2007035948020'),
+  ('UL-T843-CREAM-S', 'cream-anime-tee', 'Cream', '#f2ece0', 'S', 89900, NULL, NULL, 'in-stock', 10, '2007035948021'),
+  ('UL-T843-CREAM-M', 'cream-anime-tee', 'Cream', '#f2ece0', 'M', 89900, NULL, NULL, 'in-stock', 10, '2007035948022'),
+  ('UL-T843-CREAM-L', 'cream-anime-tee', 'Cream', '#f2ece0', 'L', 89900, NULL, NULL, 'in-stock', 10, '2007035948023'),
+  ('UL-T843-CREAM-XL', 'cream-anime-tee', 'Cream', '#f2ece0', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2007035948024'),
+  ('UL-T843-CREAM-2XL', 'cream-anime-tee', 'Cream', '#f2ece0', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2007035948025'),
+  ('UL-T843-CREAM-3XL', 'cream-anime-tee', 'Cream', '#f2ece0', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2007035948026');
 
 delete from public.embroidery_details where product_slug = 'cream-anime-tee';
 insert into public.embroidery_details (
@@ -2391,14 +2391,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('floral-skeleton-hoodie', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/floral-skeleton-hoodie-12.jpg', 'Floral Skeleton Hoodie — detail view 6', NULL, 11);
 
 delete from public.variants where product_slug = 'floral-skeleton-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-H71D-BLACK-XS', 'floral-skeleton-hoodie', 'Black', '#111111', 'XS', 149900, NULL, 'in-stock', 10, '2008175344930'),
-  ('UL-H71D-BLACK-S', 'floral-skeleton-hoodie', 'Black', '#111111', 'S', 149900, NULL, 'in-stock', 10, '2008175344931'),
-  ('UL-H71D-BLACK-M', 'floral-skeleton-hoodie', 'Black', '#111111', 'M', 149900, NULL, 'in-stock', 10, '2008175344932'),
-  ('UL-H71D-BLACK-L', 'floral-skeleton-hoodie', 'Black', '#111111', 'L', 149900, NULL, 'in-stock', 10, '2008175344933'),
-  ('UL-H71D-BLACK-XL', 'floral-skeleton-hoodie', 'Black', '#111111', 'XL', 149900, NULL, 'in-stock', 10, '2008175344934'),
-  ('UL-H71D-BLACK-2XL', 'floral-skeleton-hoodie', 'Black', '#111111', '2XL', 149900, NULL, 'in-stock', 10, '2008175344935'),
-  ('UL-H71D-BLACK-3XL', 'floral-skeleton-hoodie', 'Black', '#111111', '3XL', 149900, NULL, 'in-stock', 10, '2008175344936');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-H71D-BLACK-XS', 'floral-skeleton-hoodie', 'Black', '#111111', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2008175344930'),
+  ('UL-H71D-BLACK-S', 'floral-skeleton-hoodie', 'Black', '#111111', 'S', 149900, NULL, NULL, 'in-stock', 10, '2008175344931'),
+  ('UL-H71D-BLACK-M', 'floral-skeleton-hoodie', 'Black', '#111111', 'M', 149900, NULL, NULL, 'in-stock', 10, '2008175344932'),
+  ('UL-H71D-BLACK-L', 'floral-skeleton-hoodie', 'Black', '#111111', 'L', 149900, NULL, NULL, 'in-stock', 10, '2008175344933'),
+  ('UL-H71D-BLACK-XL', 'floral-skeleton-hoodie', 'Black', '#111111', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2008175344934'),
+  ('UL-H71D-BLACK-2XL', 'floral-skeleton-hoodie', 'Black', '#111111', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2008175344935'),
+  ('UL-H71D-BLACK-3XL', 'floral-skeleton-hoodie', 'Black', '#111111', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2008175344936');
 
 delete from public.embroidery_details where product_slug = 'floral-skeleton-hoodie';
 insert into public.embroidery_details (
@@ -2555,14 +2555,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('floral-sweep-hoodie', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/floral-swoosh-hoodie-6.jpg', 'Floral Sweep Hoodie — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'floral-sweep-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-H70B-BLACK-XS', 'floral-sweep-hoodie', 'Black', '#111111', 'XS', 149900, NULL, 'in-stock', 10, '2000234328820'),
-  ('UL-H70B-BLACK-S', 'floral-sweep-hoodie', 'Black', '#111111', 'S', 149900, NULL, 'in-stock', 10, '2000234328821'),
-  ('UL-H70B-BLACK-M', 'floral-sweep-hoodie', 'Black', '#111111', 'M', 149900, NULL, 'in-stock', 10, '2000234328822'),
-  ('UL-H70B-BLACK-L', 'floral-sweep-hoodie', 'Black', '#111111', 'L', 149900, NULL, 'in-stock', 10, '2000234328823'),
-  ('UL-H70B-BLACK-XL', 'floral-sweep-hoodie', 'Black', '#111111', 'XL', 149900, NULL, 'in-stock', 10, '2000234328824'),
-  ('UL-H70B-BLACK-2XL', 'floral-sweep-hoodie', 'Black', '#111111', '2XL', 149900, NULL, 'in-stock', 10, '2000234328825'),
-  ('UL-H70B-BLACK-3XL', 'floral-sweep-hoodie', 'Black', '#111111', '3XL', 149900, NULL, 'in-stock', 10, '2000234328826');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-H70B-BLACK-XS', 'floral-sweep-hoodie', 'Black', '#111111', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2000234328820'),
+  ('UL-H70B-BLACK-S', 'floral-sweep-hoodie', 'Black', '#111111', 'S', 149900, NULL, NULL, 'in-stock', 10, '2000234328821'),
+  ('UL-H70B-BLACK-M', 'floral-sweep-hoodie', 'Black', '#111111', 'M', 149900, NULL, NULL, 'in-stock', 10, '2000234328822'),
+  ('UL-H70B-BLACK-L', 'floral-sweep-hoodie', 'Black', '#111111', 'L', 149900, NULL, NULL, 'in-stock', 10, '2000234328823'),
+  ('UL-H70B-BLACK-XL', 'floral-sweep-hoodie', 'Black', '#111111', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2000234328824'),
+  ('UL-H70B-BLACK-2XL', 'floral-sweep-hoodie', 'Black', '#111111', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2000234328825'),
+  ('UL-H70B-BLACK-3XL', 'floral-sweep-hoodie', 'Black', '#111111', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2000234328826');
 
 delete from public.embroidery_details where product_slug = 'floral-sweep-hoodie';
 insert into public.embroidery_details (
@@ -2725,14 +2725,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('indigo-wide-leg-jeans', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/indigo-wide-leg-jeans-12.jpg', 'Indigo Embroidered Wide-Leg Jeans — detail view 6', NULL, 11);
 
 delete from public.variants where product_slug = 'indigo-wide-leg-jeans';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-J4D9-INDIGO-XS', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'XS', 179900, NULL, 'in-stock', 10, '2002490262830'),
-  ('UL-J4D9-INDIGO-S', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'S', 179900, NULL, 'in-stock', 10, '2002490262831'),
-  ('UL-J4D9-INDIGO-M', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'M', 179900, NULL, 'in-stock', 10, '2002490262832'),
-  ('UL-J4D9-INDIGO-L', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'L', 179900, NULL, 'in-stock', 10, '2002490262833'),
-  ('UL-J4D9-INDIGO-XL', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'XL', 179900, NULL, 'in-stock', 10, '2002490262834'),
-  ('UL-J4D9-INDIGO-2XL', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', '2XL', 179900, NULL, 'in-stock', 10, '2002490262835'),
-  ('UL-J4D9-INDIGO-3XL', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', '3XL', 179900, NULL, 'in-stock', 10, '2002490262836');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-J4D9-INDIGO-XS', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'XS', 179900, NULL, NULL, 'in-stock', 10, '2002490262830'),
+  ('UL-J4D9-INDIGO-S', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'S', 179900, NULL, NULL, 'in-stock', 10, '2002490262831'),
+  ('UL-J4D9-INDIGO-M', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'M', 179900, NULL, NULL, 'in-stock', 10, '2002490262832'),
+  ('UL-J4D9-INDIGO-L', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'L', 179900, NULL, NULL, 'in-stock', 10, '2002490262833'),
+  ('UL-J4D9-INDIGO-XL', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', 'XL', 179900, NULL, NULL, 'in-stock', 10, '2002490262834'),
+  ('UL-J4D9-INDIGO-2XL', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', '2XL', 179900, NULL, NULL, 'in-stock', 10, '2002490262835'),
+  ('UL-J4D9-INDIGO-3XL', 'indigo-wide-leg-jeans', 'Indigo', '#2c3a56', '3XL', 179900, NULL, NULL, 'in-stock', 10, '2002490262836');
 
 delete from public.embroidery_details where product_slug = 'indigo-wide-leg-jeans';
 insert into public.embroidery_details (
@@ -2895,14 +2895,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-boho-tunic', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-boho-tunic-12.jpg', 'Ivory Boho Embroidered Tunic — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'ivory-boho-tunic';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T485-IVORY-XS', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'XS', 119900, NULL, 'in-stock', 10, '2000770553290'),
-  ('UL-T485-IVORY-S', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'S', 119900, NULL, 'in-stock', 10, '2000770553291'),
-  ('UL-T485-IVORY-M', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'M', 119900, NULL, 'in-stock', 10, '2000770553292'),
-  ('UL-T485-IVORY-L', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'L', 119900, NULL, 'in-stock', 10, '2000770553293'),
-  ('UL-T485-IVORY-XL', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'XL', 119900, NULL, 'in-stock', 10, '2000770553294'),
-  ('UL-T485-IVORY-2XL', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', '2XL', 119900, NULL, 'in-stock', 10, '2000770553295'),
-  ('UL-T485-IVORY-3XL', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', '3XL', 119900, NULL, 'in-stock', 10, '2000770553296');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T485-IVORY-XS', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2000770553290'),
+  ('UL-T485-IVORY-S', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'S', 119900, NULL, NULL, 'in-stock', 10, '2000770553291'),
+  ('UL-T485-IVORY-M', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'M', 119900, NULL, NULL, 'in-stock', 10, '2000770553292'),
+  ('UL-T485-IVORY-L', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'L', 119900, NULL, NULL, 'in-stock', 10, '2000770553293'),
+  ('UL-T485-IVORY-XL', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2000770553294'),
+  ('UL-T485-IVORY-2XL', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2000770553295'),
+  ('UL-T485-IVORY-3XL', 'ivory-boho-tunic', 'Ivory', '#f4ecd9', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2000770553296');
 
 delete from public.embroidery_details where product_slug = 'ivory-boho-tunic';
 insert into public.embroidery_details (
@@ -3065,14 +3065,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-embroidered-shirt', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-embroidered-shirt-12.jpg', 'Ivory Embroidered Shirt — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'ivory-embroidered-shirt';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-S452-IVORY-XS', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'XS', 119900, NULL, 'in-stock', 10, '2003005584890'),
-  ('UL-S452-IVORY-S', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'S', 119900, NULL, 'in-stock', 10, '2003005584891'),
-  ('UL-S452-IVORY-M', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'M', 119900, NULL, 'in-stock', 10, '2003005584892'),
-  ('UL-S452-IVORY-L', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'L', 119900, NULL, 'in-stock', 10, '2003005584893'),
-  ('UL-S452-IVORY-XL', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'XL', 119900, NULL, 'in-stock', 10, '2003005584894'),
-  ('UL-S452-IVORY-2XL', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', '2XL', 119900, NULL, 'in-stock', 10, '2003005584895'),
-  ('UL-S452-IVORY-3XL', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', '3XL', 119900, NULL, 'in-stock', 10, '2003005584896');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-S452-IVORY-XS', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2003005584890'),
+  ('UL-S452-IVORY-S', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'S', 119900, NULL, NULL, 'in-stock', 10, '2003005584891'),
+  ('UL-S452-IVORY-M', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'M', 119900, NULL, NULL, 'in-stock', 10, '2003005584892'),
+  ('UL-S452-IVORY-L', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'L', 119900, NULL, NULL, 'in-stock', 10, '2003005584893'),
+  ('UL-S452-IVORY-XL', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2003005584894'),
+  ('UL-S452-IVORY-2XL', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2003005584895'),
+  ('UL-S452-IVORY-3XL', 'ivory-embroidered-shirt', 'Ivory', '#f6efe0', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2003005584896');
 
 delete from public.embroidery_details where product_slug = 'ivory-embroidered-shirt';
 insert into public.embroidery_details (
@@ -3235,14 +3235,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-embroidered-sweater', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-embroidered-sweater-12.jpg', 'Ivory Embroidered Sweater — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'ivory-embroidered-sweater';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-S9DF-CREAM-XS', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'XS', 149900, NULL, 'in-stock', 10, '2008444713050'),
-  ('UL-S9DF-CREAM-S', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'S', 149900, NULL, 'in-stock', 10, '2008444713051'),
-  ('UL-S9DF-CREAM-M', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'M', 149900, NULL, 'in-stock', 10, '2008444713052'),
-  ('UL-S9DF-CREAM-L', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'L', 149900, NULL, 'in-stock', 10, '2008444713053'),
-  ('UL-S9DF-CREAM-XL', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'XL', 149900, NULL, 'in-stock', 10, '2008444713054'),
-  ('UL-S9DF-CREAM-2XL', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', '2XL', 149900, NULL, 'in-stock', 10, '2008444713055'),
-  ('UL-S9DF-CREAM-3XL', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', '3XL', 149900, NULL, 'in-stock', 10, '2008444713056');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-S9DF-CREAM-XS', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2008444713050'),
+  ('UL-S9DF-CREAM-S', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'S', 149900, NULL, NULL, 'in-stock', 10, '2008444713051'),
+  ('UL-S9DF-CREAM-M', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'M', 149900, NULL, NULL, 'in-stock', 10, '2008444713052'),
+  ('UL-S9DF-CREAM-L', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'L', 149900, NULL, NULL, 'in-stock', 10, '2008444713053'),
+  ('UL-S9DF-CREAM-XL', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2008444713054'),
+  ('UL-S9DF-CREAM-2XL', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2008444713055'),
+  ('UL-S9DF-CREAM-3XL', 'ivory-embroidered-sweater', 'Cream', '#f2ece0', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2008444713056');
 
 delete from public.embroidery_details where product_slug = 'ivory-embroidered-sweater';
 insert into public.embroidery_details (
@@ -3405,14 +3405,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-floral-linen-skirt', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-floral-linen-skirt-12.jpg', 'Ivory Floral Linen Skirt — detail view 6', NULL, 11);
 
 delete from public.variants where product_slug = 'ivory-floral-linen-skirt';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-SD66-IVORY-XS', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'XS', 119900, NULL, 'in-stock', 10, '2006979468100'),
-  ('UL-SD66-IVORY-S', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'S', 119900, NULL, 'in-stock', 10, '2006979468101'),
-  ('UL-SD66-IVORY-M', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'M', 119900, NULL, 'in-stock', 10, '2006979468102'),
-  ('UL-SD66-IVORY-L', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'L', 119900, NULL, 'in-stock', 10, '2006979468103'),
-  ('UL-SD66-IVORY-XL', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'XL', 119900, NULL, 'in-stock', 10, '2006979468104'),
-  ('UL-SD66-IVORY-2XL', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', '2XL', 119900, NULL, 'in-stock', 10, '2006979468105'),
-  ('UL-SD66-IVORY-3XL', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', '3XL', 119900, NULL, 'in-stock', 10, '2006979468106');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-SD66-IVORY-XS', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2006979468100'),
+  ('UL-SD66-IVORY-S', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'S', 119900, NULL, NULL, 'in-stock', 10, '2006979468101'),
+  ('UL-SD66-IVORY-M', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'M', 119900, NULL, NULL, 'in-stock', 10, '2006979468102'),
+  ('UL-SD66-IVORY-L', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'L', 119900, NULL, NULL, 'in-stock', 10, '2006979468103'),
+  ('UL-SD66-IVORY-XL', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2006979468104'),
+  ('UL-SD66-IVORY-2XL', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2006979468105'),
+  ('UL-SD66-IVORY-3XL', 'ivory-floral-linen-skirt', 'Ivory', '#f4ecd9', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2006979468106');
 
 delete from public.embroidery_details where product_slug = 'ivory-floral-linen-skirt';
 insert into public.embroidery_details (
@@ -3569,14 +3569,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-floral-shirt', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-floral-shirt-6.jpg', 'Ivory Floral Shirt — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'ivory-floral-shirt';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-S768-IVORY-XS', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'XS', 119900, NULL, 'in-stock', 10, '2000957885910'),
-  ('UL-S768-IVORY-S', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'S', 119900, NULL, 'in-stock', 10, '2000957885911'),
-  ('UL-S768-IVORY-M', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'M', 119900, NULL, 'in-stock', 10, '2000957885912'),
-  ('UL-S768-IVORY-L', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'L', 119900, NULL, 'in-stock', 10, '2000957885913'),
-  ('UL-S768-IVORY-XL', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'XL', 119900, NULL, 'in-stock', 10, '2000957885914'),
-  ('UL-S768-IVORY-2XL', 'ivory-floral-shirt', 'Ivory', '#f6efe0', '2XL', 119900, NULL, 'in-stock', 10, '2000957885915'),
-  ('UL-S768-IVORY-3XL', 'ivory-floral-shirt', 'Ivory', '#f6efe0', '3XL', 119900, NULL, 'in-stock', 10, '2000957885916');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-S768-IVORY-XS', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2000957885910'),
+  ('UL-S768-IVORY-S', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'S', 119900, NULL, NULL, 'in-stock', 10, '2000957885911'),
+  ('UL-S768-IVORY-M', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'M', 119900, NULL, NULL, 'in-stock', 10, '2000957885912'),
+  ('UL-S768-IVORY-L', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'L', 119900, NULL, NULL, 'in-stock', 10, '2000957885913'),
+  ('UL-S768-IVORY-XL', 'ivory-floral-shirt', 'Ivory', '#f6efe0', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2000957885914'),
+  ('UL-S768-IVORY-2XL', 'ivory-floral-shirt', 'Ivory', '#f6efe0', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2000957885915'),
+  ('UL-S768-IVORY-3XL', 'ivory-floral-shirt', 'Ivory', '#f6efe0', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2000957885916');
 
 delete from public.embroidery_details where product_slug = 'ivory-floral-shirt';
 insert into public.embroidery_details (
@@ -3739,14 +3739,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-folk-embroidered-blouse', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-folk-embroidered-blouse-12.jpg', 'Ivory Folk Embroidered Blouse — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'ivory-folk-embroidered-blouse';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-B6A3-CREAM-XS', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'XS', 119900, NULL, 'in-stock', 10, '2005572835680'),
-  ('UL-B6A3-CREAM-S', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'S', 119900, NULL, 'in-stock', 10, '2005572835681'),
-  ('UL-B6A3-CREAM-M', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'M', 119900, NULL, 'in-stock', 10, '2005572835682'),
-  ('UL-B6A3-CREAM-L', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'L', 119900, NULL, 'in-stock', 10, '2005572835683'),
-  ('UL-B6A3-CREAM-XL', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'XL', 119900, NULL, 'in-stock', 10, '2005572835684'),
-  ('UL-B6A3-CREAM-2XL', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', '2XL', 119900, NULL, 'in-stock', 10, '2005572835685'),
-  ('UL-B6A3-CREAM-3XL', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', '3XL', 119900, NULL, 'in-stock', 10, '2005572835686');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-B6A3-CREAM-XS', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2005572835680'),
+  ('UL-B6A3-CREAM-S', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'S', 119900, NULL, NULL, 'in-stock', 10, '2005572835681'),
+  ('UL-B6A3-CREAM-M', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'M', 119900, NULL, NULL, 'in-stock', 10, '2005572835682'),
+  ('UL-B6A3-CREAM-L', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'L', 119900, NULL, NULL, 'in-stock', 10, '2005572835683'),
+  ('UL-B6A3-CREAM-XL', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2005572835684'),
+  ('UL-B6A3-CREAM-2XL', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2005572835685'),
+  ('UL-B6A3-CREAM-3XL', 'ivory-folk-embroidered-blouse', 'Cream', '#f2ece0', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2005572835686');
 
 delete from public.embroidery_details where product_slug = 'ivory-folk-embroidered-blouse';
 insert into public.embroidery_details (
@@ -3903,14 +3903,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-hoodie', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-hoodie-6.jpg', 'Ivory Embroidered Hoodie — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'ivory-hoodie';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-H4B0-CREAM-XS', 'ivory-hoodie', 'Cream', '#f2ece0', 'XS', 149900, NULL, 'in-stock', 10, '2002415329970'),
-  ('UL-H4B0-CREAM-S', 'ivory-hoodie', 'Cream', '#f2ece0', 'S', 149900, NULL, 'in-stock', 10, '2002415329971'),
-  ('UL-H4B0-CREAM-M', 'ivory-hoodie', 'Cream', '#f2ece0', 'M', 149900, NULL, 'in-stock', 10, '2002415329972'),
-  ('UL-H4B0-CREAM-L', 'ivory-hoodie', 'Cream', '#f2ece0', 'L', 149900, NULL, 'in-stock', 10, '2002415329973'),
-  ('UL-H4B0-CREAM-XL', 'ivory-hoodie', 'Cream', '#f2ece0', 'XL', 149900, NULL, 'in-stock', 10, '2002415329974'),
-  ('UL-H4B0-CREAM-2XL', 'ivory-hoodie', 'Cream', '#f2ece0', '2XL', 149900, NULL, 'in-stock', 10, '2002415329975'),
-  ('UL-H4B0-CREAM-3XL', 'ivory-hoodie', 'Cream', '#f2ece0', '3XL', 149900, NULL, 'in-stock', 10, '2002415329976');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-H4B0-CREAM-XS', 'ivory-hoodie', 'Cream', '#f2ece0', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2002415329970'),
+  ('UL-H4B0-CREAM-S', 'ivory-hoodie', 'Cream', '#f2ece0', 'S', 149900, NULL, NULL, 'in-stock', 10, '2002415329971'),
+  ('UL-H4B0-CREAM-M', 'ivory-hoodie', 'Cream', '#f2ece0', 'M', 149900, NULL, NULL, 'in-stock', 10, '2002415329972'),
+  ('UL-H4B0-CREAM-L', 'ivory-hoodie', 'Cream', '#f2ece0', 'L', 149900, NULL, NULL, 'in-stock', 10, '2002415329973'),
+  ('UL-H4B0-CREAM-XL', 'ivory-hoodie', 'Cream', '#f2ece0', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2002415329974'),
+  ('UL-H4B0-CREAM-2XL', 'ivory-hoodie', 'Cream', '#f2ece0', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2002415329975'),
+  ('UL-H4B0-CREAM-3XL', 'ivory-hoodie', 'Cream', '#f2ece0', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2002415329976');
 
 delete from public.embroidery_details where product_slug = 'ivory-hoodie';
 insert into public.embroidery_details (
@@ -4073,14 +4073,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('ivory-mandarin-knit-sweater', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/ivory-mandarin-knit-sweater-12.jpg', 'Ivory Mandarin-Collar Knit Sweater — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'ivory-mandarin-knit-sweater';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-SDD7-IVORY-XS', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'XS', 149900, NULL, 'in-stock', 10, '2002566621460'),
-  ('UL-SDD7-IVORY-S', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'S', 149900, NULL, 'in-stock', 10, '2002566621461'),
-  ('UL-SDD7-IVORY-M', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'M', 149900, NULL, 'in-stock', 10, '2002566621462'),
-  ('UL-SDD7-IVORY-L', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'L', 149900, NULL, 'in-stock', 10, '2002566621463'),
-  ('UL-SDD7-IVORY-XL', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'XL', 149900, NULL, 'in-stock', 10, '2002566621464'),
-  ('UL-SDD7-IVORY-2XL', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', '2XL', 149900, NULL, 'in-stock', 10, '2002566621465'),
-  ('UL-SDD7-IVORY-3XL', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', '3XL', 149900, NULL, 'in-stock', 10, '2002566621466');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-SDD7-IVORY-XS', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'XS', 149900, NULL, NULL, 'in-stock', 10, '2002566621460'),
+  ('UL-SDD7-IVORY-S', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'S', 149900, NULL, NULL, 'in-stock', 10, '2002566621461'),
+  ('UL-SDD7-IVORY-M', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'M', 149900, NULL, NULL, 'in-stock', 10, '2002566621462'),
+  ('UL-SDD7-IVORY-L', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'L', 149900, NULL, NULL, 'in-stock', 10, '2002566621463'),
+  ('UL-SDD7-IVORY-XL', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', 'XL', 149900, NULL, NULL, 'in-stock', 10, '2002566621464'),
+  ('UL-SDD7-IVORY-2XL', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', '2XL', 149900, NULL, NULL, 'in-stock', 10, '2002566621465'),
+  ('UL-SDD7-IVORY-3XL', 'ivory-mandarin-knit-sweater', 'Ivory', '#f4ecd9', '3XL', 149900, NULL, NULL, 'in-stock', 10, '2002566621466');
 
 delete from public.embroidery_details where product_slug = 'ivory-mandarin-knit-sweater';
 insert into public.embroidery_details (
@@ -4243,14 +4243,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('sage-linen-embroidered-shirt', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/sage-linen-embroidered-shirt-12.jpg', 'Sage Linen Embroidered Shirt — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'sage-linen-embroidered-shirt';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-SC44-SAGE-XS', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'XS', 119900, NULL, 'in-stock', 10, '2003949407860'),
-  ('UL-SC44-SAGE-S', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'S', 119900, NULL, 'in-stock', 10, '2003949407861'),
-  ('UL-SC44-SAGE-M', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'M', 119900, NULL, 'in-stock', 10, '2003949407862'),
-  ('UL-SC44-SAGE-L', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'L', 119900, NULL, 'in-stock', 10, '2003949407863'),
-  ('UL-SC44-SAGE-XL', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'XL', 119900, NULL, 'in-stock', 10, '2003949407864'),
-  ('UL-SC44-SAGE-2XL', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', '2XL', 119900, NULL, 'in-stock', 10, '2003949407865'),
-  ('UL-SC44-SAGE-3XL', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', '3XL', 119900, NULL, 'in-stock', 10, '2003949407866');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-SC44-SAGE-XS', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'XS', 119900, NULL, NULL, 'in-stock', 10, '2003949407860'),
+  ('UL-SC44-SAGE-S', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'S', 119900, NULL, NULL, 'in-stock', 10, '2003949407861'),
+  ('UL-SC44-SAGE-M', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'M', 119900, NULL, NULL, 'in-stock', 10, '2003949407862'),
+  ('UL-SC44-SAGE-L', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'L', 119900, NULL, NULL, 'in-stock', 10, '2003949407863'),
+  ('UL-SC44-SAGE-XL', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', 'XL', 119900, NULL, NULL, 'in-stock', 10, '2003949407864'),
+  ('UL-SC44-SAGE-2XL', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', '2XL', 119900, NULL, NULL, 'in-stock', 10, '2003949407865'),
+  ('UL-SC44-SAGE-3XL', 'sage-linen-embroidered-shirt', 'Sage', '#8a9a7b', '3XL', 119900, NULL, NULL, 'in-stock', 10, '2003949407866');
 
 delete from public.embroidery_details where product_slug = 'sage-linen-embroidered-shirt';
 insert into public.embroidery_details (
@@ -4407,14 +4407,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('spine-embroidery-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/spine-embroidery-tee-6.jpg', 'Spine Embroidery Tee — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'spine-embroidery-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T62A-OFFWHI-XS', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'XS', 89900, NULL, 'in-stock', 10, '2002774014580'),
-  ('UL-T62A-OFFWHI-S', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'S', 89900, NULL, 'in-stock', 10, '2002774014581'),
-  ('UL-T62A-OFFWHI-M', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'M', 89900, NULL, 'in-stock', 10, '2002774014582'),
-  ('UL-T62A-OFFWHI-L', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'L', 89900, NULL, 'in-stock', 10, '2002774014583'),
-  ('UL-T62A-OFFWHI-XL', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'XL', 89900, NULL, 'in-stock', 10, '2002774014584'),
-  ('UL-T62A-OFFWHI-2XL', 'spine-embroidery-tee', 'Off-White', '#f2efe8', '2XL', 89900, NULL, 'in-stock', 10, '2002774014585'),
-  ('UL-T62A-OFFWHI-3XL', 'spine-embroidery-tee', 'Off-White', '#f2efe8', '3XL', 89900, NULL, 'in-stock', 10, '2002774014586');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T62A-OFFWHI-XS', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2002774014580'),
+  ('UL-T62A-OFFWHI-S', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'S', 89900, NULL, NULL, 'in-stock', 10, '2002774014581'),
+  ('UL-T62A-OFFWHI-M', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'M', 89900, NULL, NULL, 'in-stock', 10, '2002774014582'),
+  ('UL-T62A-OFFWHI-L', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'L', 89900, NULL, NULL, 'in-stock', 10, '2002774014583'),
+  ('UL-T62A-OFFWHI-XL', 'spine-embroidery-tee', 'Off-White', '#f2efe8', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2002774014584'),
+  ('UL-T62A-OFFWHI-2XL', 'spine-embroidery-tee', 'Off-White', '#f2efe8', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2002774014585'),
+  ('UL-T62A-OFFWHI-3XL', 'spine-embroidery-tee', 'Off-White', '#f2efe8', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2002774014586');
 
 delete from public.embroidery_details where product_slug = 'spine-embroidery-tee';
 insert into public.embroidery_details (
@@ -4577,14 +4577,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('white-cat-graphic-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/white-cat-graphic-tee-12.jpg', 'White Cat Graphic Tee — detail view 6', NULL, 11);
 
 delete from public.variants where product_slug = 'white-cat-graphic-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T2A3-WHITE-XS', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, 'in-stock', 10, '2008505288090'),
-  ('UL-T2A3-WHITE-S', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'S', 89900, NULL, 'in-stock', 10, '2008505288091'),
-  ('UL-T2A3-WHITE-M', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'M', 89900, NULL, 'in-stock', 10, '2008505288092'),
-  ('UL-T2A3-WHITE-L', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'L', 89900, NULL, 'in-stock', 10, '2008505288093'),
-  ('UL-T2A3-WHITE-XL', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, 'in-stock', 10, '2008505288094'),
-  ('UL-T2A3-WHITE-2XL', 'white-cat-graphic-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, 'in-stock', 10, '2008505288095'),
-  ('UL-T2A3-WHITE-3XL', 'white-cat-graphic-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, 'in-stock', 10, '2008505288096');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T2A3-WHITE-XS', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2008505288090'),
+  ('UL-T2A3-WHITE-S', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'S', 89900, NULL, NULL, 'in-stock', 10, '2008505288091'),
+  ('UL-T2A3-WHITE-M', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'M', 89900, NULL, NULL, 'in-stock', 10, '2008505288092'),
+  ('UL-T2A3-WHITE-L', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'L', 89900, NULL, NULL, 'in-stock', 10, '2008505288093'),
+  ('UL-T2A3-WHITE-XL', 'white-cat-graphic-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2008505288094'),
+  ('UL-T2A3-WHITE-2XL', 'white-cat-graphic-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2008505288095'),
+  ('UL-T2A3-WHITE-3XL', 'white-cat-graphic-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2008505288096');
 
 delete from public.embroidery_details where product_slug = 'white-cat-graphic-tee';
 insert into public.embroidery_details (
@@ -4747,14 +4747,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('white-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/white-tee-12.jpg', 'White Tee — stitch and thread macro', NULL, 11);
 
 delete from public.variants where product_slug = 'white-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T18E-WHITE-XS', 'white-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, 'in-stock', 10, '2004390209030'),
-  ('UL-T18E-WHITE-S', 'white-tee', 'White', '#fbfbf9', 'S', 89900, NULL, 'in-stock', 10, '2004390209031'),
-  ('UL-T18E-WHITE-M', 'white-tee', 'White', '#fbfbf9', 'M', 89900, NULL, 'in-stock', 10, '2004390209032'),
-  ('UL-T18E-WHITE-L', 'white-tee', 'White', '#fbfbf9', 'L', 89900, NULL, 'in-stock', 10, '2004390209033'),
-  ('UL-T18E-WHITE-XL', 'white-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, 'in-stock', 10, '2004390209034'),
-  ('UL-T18E-WHITE-2XL', 'white-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, 'in-stock', 10, '2004390209035'),
-  ('UL-T18E-WHITE-3XL', 'white-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, 'in-stock', 10, '2004390209036');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T18E-WHITE-XS', 'white-tee', 'White', '#fbfbf9', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2004390209030'),
+  ('UL-T18E-WHITE-S', 'white-tee', 'White', '#fbfbf9', 'S', 89900, NULL, NULL, 'in-stock', 10, '2004390209031'),
+  ('UL-T18E-WHITE-M', 'white-tee', 'White', '#fbfbf9', 'M', 89900, NULL, NULL, 'in-stock', 10, '2004390209032'),
+  ('UL-T18E-WHITE-L', 'white-tee', 'White', '#fbfbf9', 'L', 89900, NULL, NULL, 'in-stock', 10, '2004390209033'),
+  ('UL-T18E-WHITE-XL', 'white-tee', 'White', '#fbfbf9', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2004390209034'),
+  ('UL-T18E-WHITE-2XL', 'white-tee', 'White', '#fbfbf9', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2004390209035'),
+  ('UL-T18E-WHITE-3XL', 'white-tee', 'White', '#fbfbf9', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2004390209036');
 
 delete from public.embroidery_details where product_slug = 'white-tee';
 insert into public.embroidery_details (
@@ -4911,14 +4911,14 @@ insert into public.product_images (product_slug, src, alt, color, sort_order) va
   ('xray-oversized-tee', 'https://heimnfjuwmmmejqcjbbd.supabase.co/storage/v1/object/public/product-images/products/xray-oversized-tee-6.jpg', 'X-RAY Filter Oversized Tee — folded packaging view', NULL, 5);
 
 delete from public.variants where product_slug = 'xray-oversized-tee';
-insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values
-  ('UL-T717-ECRU-XS', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'XS', 89900, NULL, 'in-stock', 10, '2006734297260'),
-  ('UL-T717-ECRU-S', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'S', 89900, NULL, 'in-stock', 10, '2006734297261'),
-  ('UL-T717-ECRU-M', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'M', 89900, NULL, 'in-stock', 10, '2006734297262'),
-  ('UL-T717-ECRU-L', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'L', 89900, NULL, 'in-stock', 10, '2006734297263'),
-  ('UL-T717-ECRU-XL', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'XL', 89900, NULL, 'in-stock', 10, '2006734297264'),
-  ('UL-T717-ECRU-2XL', 'xray-oversized-tee', 'Ecru', '#efe9dc', '2XL', 89900, NULL, 'in-stock', 10, '2006734297265'),
-  ('UL-T717-ECRU-3XL', 'xray-oversized-tee', 'Ecru', '#efe9dc', '3XL', 89900, NULL, 'in-stock', 10, '2006734297266');
+insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values
+  ('UL-T717-ECRU-XS', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'XS', 89900, NULL, NULL, 'in-stock', 10, '2006734297260'),
+  ('UL-T717-ECRU-S', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'S', 89900, NULL, NULL, 'in-stock', 10, '2006734297261'),
+  ('UL-T717-ECRU-M', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'M', 89900, NULL, NULL, 'in-stock', 10, '2006734297262'),
+  ('UL-T717-ECRU-L', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'L', 89900, NULL, NULL, 'in-stock', 10, '2006734297263'),
+  ('UL-T717-ECRU-XL', 'xray-oversized-tee', 'Ecru', '#efe9dc', 'XL', 89900, NULL, NULL, 'in-stock', 10, '2006734297264'),
+  ('UL-T717-ECRU-2XL', 'xray-oversized-tee', 'Ecru', '#efe9dc', '2XL', 89900, NULL, NULL, 'in-stock', 10, '2006734297265'),
+  ('UL-T717-ECRU-3XL', 'xray-oversized-tee', 'Ecru', '#efe9dc', '3XL', 89900, NULL, NULL, 'in-stock', 10, '2006734297266');
 
 delete from public.embroidery_details where product_slug = 'xray-oversized-tee';
 insert into public.embroidery_details (

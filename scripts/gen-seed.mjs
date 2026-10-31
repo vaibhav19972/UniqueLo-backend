@@ -342,9 +342,12 @@ for (const p of products) {
 
   // variants
   w(`delete from public.variants where product_slug = ${q(p.slug)};`);
-  w('insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, status, quantity, barcode) values');
+  w('insert into public.variants (sku, product_slug, color, color_hex, size, price_cents, compare_at_price_cents, compare_at_ends_at, status, quantity, barcode) values');
   w(p.variants
-    .map((v) => `  (${q(v.sku)}, ${q(p.slug)}, ${q(v.color ?? 'Default')}, ${v.colorHex ? q(v.colorHex) : 'NULL'}, ${q(v.size ?? 'ONE')}, ${v.priceCents}, ${num(v.compareAtPriceCents)}, ${q(v.status ?? 'in-stock')}, ${num(v.quantity ?? 0)}, ${v.barcode ? q(v.barcode) : 'NULL'})`)
+    // compare_at_ends_at is a timestamptz: it needs a quoted literal, not the
+    // bare `num()` path price_cents uses. q() stringifies, so a null must be
+    // routed to a real NULL or every variant would store the text 'null'.
+    .map((v) => `  (${q(v.sku)}, ${q(p.slug)}, ${q(v.color ?? 'Default')}, ${v.colorHex ? q(v.colorHex) : 'NULL'}, ${q(v.size ?? 'ONE')}, ${v.priceCents}, ${num(v.compareAtPriceCents)}, ${v.compareAtEndsAt == null ? 'NULL' : q(v.compareAtEndsAt)}, ${q(v.status ?? 'in-stock')}, ${num(v.quantity ?? 0)}, ${v.barcode ? q(v.barcode) : 'NULL'})`)
     .join(',\n') + ';');
   w();
 
