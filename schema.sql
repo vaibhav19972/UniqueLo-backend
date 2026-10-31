@@ -284,6 +284,11 @@ create table if not exists public.orders (
   -- A tracking number without a carrier is unusable, and vice versa.
   constraint orders_tracking_pairs_with_carrier
     check ((tracking_number is null and carrier is null)
+        or (tracking_number is not null and carrier is not null)),
+  -- `shipped` means "with courier", so it must carry an AWB (migrations/20261103).
+  -- `delivered` is exempt: a hand-delivered order completes without one.
+  constraint orders_shipped_needs_tracking
+    check (status <> 'shipped'
         or (tracking_number is not null and carrier is not null))
 );
 

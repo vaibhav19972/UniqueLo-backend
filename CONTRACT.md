@@ -278,7 +278,7 @@ Single entry point: `rpc/place_order`. No client inserts into `orders`/`order_it
 | `confirmed` | `place_order` (prepaid) | paid or pay-on-ship agreed |
 | `confirmed-cod` | `place_order` (`payment_method='cod'`) | cash on delivery agreed |
 | `processing` | admin | being packed |
-| `shipped` | admin | with courier; `tracking_number` + `carrier` now required |
+| `shipped` | admin | with courier. **`tracking_number` + `carrier` are required** — `orders_shipped_needs_tracking` refuses `shipped` without both (`20261103`). `delivered` is exempt so a hand-delivered order can complete |
 | `delivered` | admin | received |
 | `cancelled` | admin | void |
 
