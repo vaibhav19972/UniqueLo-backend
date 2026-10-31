@@ -41,8 +41,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
-  const keyId = Deno.env.get('RAZORPAY_KEY_ID');
-  const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
+  const keyId = Deno.env.get('RAZORPAY_KEY_ID')?.trim();
+  const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')?.trim();
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   // Same fallback chain as razorpay-create-order. Newer Supabase projects expose
@@ -79,6 +79,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
   }
 
+  console.log(`[razorpay-verify] Received request for order: ${razorpay_order_id}, payment: ${razorpay_payment_id}`);
+
   // ── Check 1: the signature ────────────────────────────────────────────
   const valid = await verifySignature(
     razorpay_order_id,
@@ -88,6 +90,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   );
 
   if (!valid) {
+    console.error(`[razorpay-verify] Signature verification failed for order: ${razorpay_order_id}`);
     // Signature mismatch means someone is asserting a payment Razorpay did not
     // sign for this order. Nothing is written, nothing is marked paid.
     return json({ error: 'Payment signature verification failed.' }, 400);
@@ -104,12 +107,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .eq('provider_order_id', razorpay_order_id)
     .maybeSingle();
 
-  if (intentError) return json({ error: 'Could not read the payment record.' }, 500);
+  if (intentError) {
+    console.error(`[razorpay-verify] Error reading payment intent:`, intentError);
+    return json({ error: 'Could not read the payment record.' }, 500);
+  }
   if (!intent) {
+    console.warn(`[razorpay-verify] No intent found matching order: ${razorpay_order_id}`);
     // A valid signature for an order we never created is either a replay from a
     // different environment (test/live key mixup) or an attack.
     return json({ error: 'No payment intent matches this Razorpay order.' }, 404);
   }
+
+  console.log(`[razorpay-verify] Found intent ${intent.id}, amount_cents: ${intent.amount_cents}`);
 
   // ── Idempotency: a retried verify must not double-place an order ──────
   // Covers the case where place_order succeeded but the intent update did not.
@@ -302,6 +311,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   const orderId = placed?.id ?? intent.client_order_id;
+
+  console.log(`[razorpay-verify] Successfully verified payment ${razorpay_payment_id} and placed order ${orderId}`);
 
   // Guarded so two concurrent verifies cannot both win the write.
   await admin

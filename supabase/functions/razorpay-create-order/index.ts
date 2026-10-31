@@ -78,8 +78,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
-  const keyId = Deno.env.get('RAZORPAY_KEY_ID');
-  const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
+  const keyId = Deno.env.get('RAZORPAY_KEY_ID')?.trim();
+  const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')?.trim();
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
