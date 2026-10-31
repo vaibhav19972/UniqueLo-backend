@@ -1,5 +1,23 @@
 # Deploy runbook — customer auth (run in this order)
 
+> ## ✅ Steps 1–3 are ALREADY APPLIED (verified 2026-10-31)
+>
+> Measured read-only against `heimnfjuwmmmejqcjbbd`: `public.admins` → `200`
+> (step 1 done), `customer_addresses` / `customer_wishlists` / `orders.user_id` →
+> `200` (step 3 done), and anon `POST /rest/v1/garments` → `401 42501` (the
+> lockdown is in force).
+>
+> **Do not re-run steps 1–3 against the hosted project.** They are idempotent, so
+> a re-run is harmless, but it is also pointless and it invites the mistake of
+> re-applying a policy block whose final form `20261031` has already replaced.
+>
+> Still outstanding and still worth doing:
+> - **Step 5** — phone OTP + DLT registration (blocks real Indian users, takes days)
+> - **Step 6** — the signed-in-customer probe (OA-6), which is the one thing no
+>   read-only probe can settle
+>
+> Use steps 1–4 as written only when standing up a **fresh** project.
+
 Paste each block into **Supabase Dashboard → SQL Editor**. Run them one at a
 time and check the stated result before moving on. Every block is idempotent, so
 a re-run is safe.

@@ -5,10 +5,14 @@
 If the backend changes shape, it changes here first. Both clients then update to match.
 No client may invent a field, and no field may exist in a client without appearing here.
 
-`products` has **44 columns** measured live (`contracts/live-columns.txt`);
-`migrations/01_web_20261013` adds `intensity` for a 45th once applied. Gated by
-`scripts/check-contract.mjs` (code + this doc vs schema) and
-`scripts/check-schema-parity.mjs` (schema.sql vs the measured live shape).
+`products` has **44 columns** measured live (`contracts/live-columns.txt`).
+There is no 45th: `intensity` was **retired 2026-10-31** with its migration
+(`migrations/_archive/01_web_20261013_taxonomy_columns.sql`) because neither
+client reads it as a column — both derive it from `expression_score`
+(`contracts/parity-gaps.md` #2). Gated by `scripts/check-contract.mjs` (code +
+this doc vs schema), `scripts/check-schema-parity.mjs` (schema.sql vs the
+measured live shape) and `scripts/check-schema-completeness.mjs` (schema.sql vs
+every table and column the migration chain creates).
 
 ---
 
@@ -20,28 +24,40 @@ through PostgREST and write through RPC functions.
 | Client | Transport | Auth | Read path | Write path |
 |---|---|---|---|---|
 | `web/` | `@supabase/supabase-js` (`web/src/lib/data.ts`) | Supabase Auth session for admin; publishable key for reads | `select` with nested embeds | `rpc/place_order`; admin via authenticated session / `publish_product` |
-| `mobile/` | Ktor HTTP (`mobile/.../data/SupabaseHttpClient.kt`) | publishable key, read-only | PostgREST `select` with `!inner` embeds | `rpc/place_order` (legacy two-call REST fallback only if the RPC is absent) |
+| `mobile/` | Ktor HTTP (`mobile/.../data/SupabaseHttpClient.kt`) | publishable key, read-only | PostgREST `select` with `!inner` embeds | `rpc/quote_order` for every bag price; `rpc/place_order` to commit (legacy two-call REST fallback only if the RPC is absent) |
 
 `web/src/lib/data.ts` is the **adapter**: it maps snake_case PostgREST rows (`RawProduct`)
 into camelCase domain objects (`Product`). Mobile does the same in `Mappers.kt`.
 Both adapters must produce the same domain shape — that equivalence is what this
 document defines.
 
-### Current hosted state (measured read-only, 2026-10-25)
+### Current hosted state (re-measured read-only, 2026-10-31)
+
+Re-measured 2026-10-31. The 2026-10-25 reading recorded throughout this repo
+("write path open", "admins absent", "20261031 pending") is **superseded**:
+everything it called unapplied has landed, and the catalogue write path is
+**closed**.
 
 | Fact | Evidence |
 |---|---|
-| 20261024 trust/marketplace columns present | 44-column fingerprint; `style_code`, `attributes`, `cod_available` all `200` |
-| `is_mock`, `intensity`, `sold_count`, `batch_*`, `craft_*` absent | `42703` on `is_mock` and `intensity` |
-| `rpc/place_order` **installed** | empty-items probe → `400 22023 "place_order requires at least one order item"`; **must post `{"p_order":{…},"p_items":[]}`** — a bare `{"items":[]}` returns `404 PGRST202`, which does not mean the function is missing |
-| `rpc/publish_product` installed, **not anon-executable** | `401 42501 permission denied for function`, posting `{"p_product":{},"p_variants":[]}` |
-| `rpc/get_order_details` installed | `200 null` for an unknown uuid/email |
-| `admins` table **absent** → `20261025` unapplied | `404 PGRST205` |
-| `01_web_20261013` (taxonomy) unapplied | `products.intensity` → `42703` |
+| `20261024` trust/marketplace columns present | 44-column fingerprint |
+| `rls` on catalogue; **anon writes refused** | `POST /rest/v1/garments` -> **`401 42501`** "new row violates row-level security policy" |
+| `admins` present -> `20261025` applied | `GET /rest/v1/admins` -> `200` (was `404 PGRST205`) |
+| `customer_addresses`, `customer_wishlists`, `orders.user_id` -> `20261031` applied | all `200` |
+| `coupons`, `shipping_rules`, `coupon_redemptions`, `variants.compare_at_ends_at`, `orders.cod_fee_cents` -> `20261101` applied | all `200`; `quote_order` returns a live quote |
+| `rpc/place_order` (p_order, p_items) | `400 22023 "place_order requires at least one order item"` |
+| `rpc/quote_order` | `400 22023 "A bag needs at least one item"`; real call -> 89900 + 9900 = **99800** |
+| `rpc/publish_product` installed, not anon-executable | `401 42501` |
+| `intensity` absent **by decision** | retired; see header |
+| Catalogue size | 29 products / 197 variants |
 
-Orders are being received on web and mobile (owner-confirmed 2026-10-25) through the
-installed RPC. The catalogue write path is still permissive because `20261025` is not
-applied — the accepted risk in `contracts/write-path-policies.md` stands.
+**The `20261025` → catalogue lockdown and the `20261031` customer-account
+migrations are both in force.** `contracts/write-path-policies.md` still carries
+an "ACCEPTED RISK — write path open" banner from 2026-10-25; that risk is
+**closed** as of 2026-10-31 and the banner is annotated accordingly.
+
+Orders are being received on web and mobile through the installed RPC.
+
 
 ---
 
@@ -262,22 +278,22 @@ is `22023`, out of stock is `P0001`, unknown SKU is `P0002`.
 
 `backend/migrations/` is ordered; both clients share this single chain.
 
-| File | Origin | Purpose | Applied on hosted (2026-10-25) |
+| File | Origin | Purpose | Applied on hosted (2026-10-31) |
 |---|---|---|---|
-| `01_web_20261013_taxonomy_columns.sql` | web | `intensity`, `craft_techniques`, `edits` | **no** (`intensity` → 42703) |
+| `01_web_20261013_taxonomy_columns.sql` | web | ~~`intensity`, `craft_techniques`, `edits`~~ | **RETIRED** — moved to `migrations/_archive/`; `intensity` is not in the live 44-column shape and both clients derive it from `expression_score` |
 | `20260101000000_place_order_fn.sql` | mobile | order placement RPC | **yes** (`22023` guard) |
 | `20260102000000_lock_catalogue_writes.sql` | mobile | full no-auth lockdown draft | replay history |
 | `20260103000000_lockdown_interim.sql` | mobile | interim lockdown | replay history |
-| `20260104000000_lockdown_auth_admin.sql` | mobile | authenticated-admin lockdown | not in force (write path open) |
+| `20260104000000_lockdown_auth_admin.sql` | mobile | authenticated-admin lockdown | **superseded by `20261031` §5b**, which drops its permissive `"Authenticated admin write"` policies. Its blanket-write hole is closed; the signed-in-customer probe (OA-6) is still open |
 | `20261024_data_model_trust_fields.sql` | web | drops fabricated fields; adds trust + marketplace columns, `attribute_definitions`, triggers | **yes** |
-| `20261025_admin_write_policies.sql` | web | `admins` + `is_admin()` + write policies | **no** (`admins` → 404) |
+| `20261025_admin_write_policies.sql` | web | `admins` + `is_admin()` + write policies | **yes** — `admins` → `200`; anon `POST /garments` → `401 42501` |
 | `20261026_catalogue_garment_types.sql` | web | garment registry rows | **yes** |
 | `20261026_publish_product.sql` | web | transactional publish RPC | installed (anon denied) |
 | `20261027_product_images_bucket.sql` | web | storage bucket + policies | bucket recreated (`ff1f052`) |
 | `20261030_harden_place_order.sql` | backend | server-side prices, coupon validation, atomic stock decrement | **yes** (verified 2026-10-29: bogus SKU → `P0002`) |
-| `20261031_customer_accounts.sql` | backend | `orders.user_id`, `customer_addresses`, `customer_wishlists`, storage re-gate, RPC-only order writes | **pending deploy** — proven 13/13 on a PG16 replica (`scripts/verify-customer-accounts.sql`) |
+| `20261031_customer_accounts.sql` | backend | `orders.user_id`, `customer_addresses`, `customer_wishlists`, storage re-gate, RPC-only order writes | **yes** — `customer_addresses`, `customer_wishlists`, `orders.user_id` all `200`; proven 13/13 on a PG16 replica (`scripts/verify-customer-accounts.sql`) |
 
-**Two findings that change the deploy order:**
+**Two findings that changed the deploy order** (both resolved by `20261031`; kept as the record of why the order was what it was):
 
 1. `20261025` alone does **not** close the write path. `20260104` created
    `"Authenticated admin write <t>"` (`using (true)`) and `20261025` only drops
@@ -289,12 +305,20 @@ is `22023`, out of stock is `P0001`, unknown SKU is `P0002`.
    hand out delete rights on catalogue photography. `20261031` §5 re-gates them
    on `is_admin()`.
 
-**Ordering caveat:** `01_web_*` sorts first lexically but was authored after the mobile
-chain. `schema.sql` carries the baseline shape. Note that `20261026_catalogue_garment_types.sql`
-has foreign keys referencing `categories(slug)`, so on a fresh database, categories must
-be seeded before running `20261026` or apply `production-seed.sql` after initial schema setup.
-Verify with `scripts/check-schema-parity.mjs` and `scripts/check-contract.mjs` after any
-change.
+**Ordering (fixed 2026-10-31).** `01_web_*` sorted first lexically but was authored
+after the mobile chain; it is retired. `20261026_catalogue_garment_types.sql` inserts
+`garments` rows with `category_slug` foreign keys, and `categories` is empty until
+`production-seed.sql` runs — while the seed must run **last**, because it writes
+`variants.compare_at_ends_at` and `orders.cod_fee_cents`, both created by `20261101`.
+That ordering caveat was therefore impossible to satisfy, and the chain aborted with
+`garments_category_slug_fkey` when first actually executed. The migration now inserts
+the three category rows it depends on (`on conflict do nothing`), so it is
+self-sufficient. Load order is simply `local-bootstrap` (plain Postgres only) →
+`schema.sql` → `migrations/` sorted → `production-seed.sql`; the whole chain is proven
+green on PostgreSQL 16.15.
+
+Verify with `scripts/check-schema-completeness.mjs`, `check-schema-parity.mjs` and
+`check-contract.mjs` after any change.
 
 ---
 

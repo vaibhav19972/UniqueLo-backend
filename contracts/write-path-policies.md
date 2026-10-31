@@ -1,6 +1,26 @@
 # Write-path policies — what to change and in what order
 
-**Status as measured on 2026-10-25 against `heimnfjuwmmmejqcjbbd.supabase.co`; re-verified read-only the same day (§0).**
+> ## ✅ CLOSED 2026-10-31 — read this first
+>
+> **The risk recorded below is closed.** Re-measured read-only against
+> `heimnfjuwmmmejqcjbbd` on 2026-10-31:
+>
+> | Probe | Result |
+> |---|---|
+> | anon `POST /rest/v1/garments` | **`401 42501`** "new row violates row-level security policy" — reaches RLS, not table constraints, so privilege + RLS both refuse it |
+> | `GET /rest/v1/admins` | `200` — `20261025` **is** applied (it was `404 PGRST205` on 2026-10-25) |
+> | `customer_addresses` / `customer_wishlists` / `orders.user_id` | all `200` — `20261031` **is** applied |
+> | `coupons` / `shipping_rules` / `coupon_redemptions` | all `200` — `20261101` **is** applied |
+>
+> The `23502` signature this document says proves the hole is still open no longer
+> occurs. Everything below is retained as the record of how the hole was found and
+> closed — do **not** apply steps from it against the hosted project.
+>
+> **Still open:** OA-6 (`mobile/docs/PROJECT_STATE.md`) — whether a *signed-in
+> customer* retains blanket catalogue write. That needs a real customer session
+> (`AUTH-DEPLOY-RUNBOOK.md` step 6), which no read-only probe can settle.
+
+**Status as measured on 2026-10-25 against `heimnfjuwmmmejqcjbbd.supabase.co`; re-verified read-only the same day (§0). Superseded by the CLOSED block above.**
 
 ## 0. Re-verification — read-only probe, 2026-10-25
 
@@ -17,7 +37,11 @@ The write path is still permissive (the accepted risk above stands) and the admi
 missing, **but `place_order` is live and orders are being received on web and mobile (owner-confirmed
 2026-10-25)**. §4's "not installed (404)" line is corrected below.
 
-> ## ⚠️ ACCEPTED RISK — DEFERRED, ON RECORD
+> **~~SUPERSEDED 2026-10-31.~~** The paragraph above is a 2026-10-25 reading. Both claims
+> in it are false now: the write path is **not** permissive (anon `POST /garments` →
+> `401 42501`) and `admins` exists. See the CLOSED block at the top of this file.
+
+> ## ⚠️ ACCEPTED RISK — DEFERRED, ON RECORD  ~~(superseded 2026-10-31 — see top)~~
 >
 > **Decision (2026-10-25, owner):** the write-policy hole below is **knowingly
 > accepted for now**, not overlooked. The project is in a pre-launch testing phase;
@@ -254,6 +278,8 @@ bundle.
 - **`place_order()` is installed** (re-verified 2026-10-25). Checkout works on web and
   mobile and orders are landing in `orders` (owner-confirmed). What is *not* installed is
   the admin allowlist (`admins` → 404), so the catalogue write path stays open — see §0.
+  **~~Superseded 2026-10-31:~~** `admins` now returns `200` and the catalogue write path
+  is closed (`401 42501` on an anon insert). See the CLOSED block at the top.
 
 ---
 

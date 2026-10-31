@@ -1,9 +1,24 @@
 # Deploy checklist — checkout pricing (`20261101`)
 
-**Status: NOT DEPLOYED.** The migration is written and proven against a local
-PostgreSQL 16 replica (132 assertions passing), but it has never been applied to
-the hosted project. Nothing in the web UI depends on it yet, so shipping the UI
-first would leave the bag calling RPCs that return 404.
+**Status: DEPLOYED — verified live 2026-10-31.** This document is now a
+**verification** record, not an apply runbook. Do not paste the migration again on
+the hosted project; it is already applied.
+
+Live evidence (read-only probes against `heimnfjuwmmmejqcjbbd`):
+
+| Probe | Result |
+|---|---|
+| `rpc/quote_order` with a real SKU | **`99800`** for an `89900` tee + `9900` shipping; `best_coupon` + `available_offers` returned |
+| `coupons` | `200`, 6 rows (`ATELIER10`, `BONKERS20`, `FREESHIP`, `GOBONKERS15`, `HUSTLE10`, `NEEDLECRAFT`) |
+| `shipping_rules` | `200` — India standard, `9900` / free above `149900` / COD fee `5900` / cap `10` |
+| `coupon_redemptions`, `variants.compare_at_ends_at`, `orders.cod_fee_cents` | all `200` |
+
+It was also executed end-to-end on PostgreSQL 16.15 as part of the full chain on
+2026-10-31 (see `CONTRACT.md` §7 "Ordering").
+
+> **Original text, for the record:** "the migration is written and proven against a
+> local PostgreSQL 16 replica (132 assertions passing), but it has never been
+> applied to the hosted project." That was true when written on 2026-10-30.
 
 Project: `heimnfjuwmmmejqcjbbd`
 Follows the same manual pattern as `contracts/AUTH-DEPLOY-RUNBOOK.md`.
