@@ -61,10 +61,17 @@ Anything matching neither becomes `'prepaid'`. **For a COD order placed below th
 free-shipping threshold that is a guess:** no fee was charged, so nothing in the
 row distinguishes it from a prepaid order.
 
-As of this writing `orders` on hosted is **empty**, so the backfill has nothing to
-mislabel. The column is authoritative from this migration forward only; treat any
-pre-`20261105` row as inferred. If the table is ever populated before this is
-applied, re-check that assumption first — it will not hold.
+As of this writing `orders` on hosted was believed **empty**, so the backfill was
+expected to have nothing to mislabel. **That was wrong** — the table held 1 row.
+The column is authoritative from this migration forward only; treat any
+pre-`20261105` row as inferred unless its `status` or `cod_fee_cents` was decisive.
+
+**Backfill outcome on hosted (measured after applying, 2026-11-01):** 1 row,
+`b9b72801` (2026-10-29, ₹4,696). It came back `cod` / `confirmed-cod` — correct,
+and via the decisive signal (`status = 'confirmed-cod'`), not the inference. No row
+was guessed. The general point still stands and is the reason to keep this section:
+a COD order **below** the free-shipping threshold carries no fee, and would have
+been silently mislabelled `prepaid`. This one was over the threshold.
 
 ---
 

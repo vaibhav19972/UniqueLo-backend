@@ -12,9 +12,11 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 
-const REPO = process.env.UL_REPO || resolve(process.cwd(), '..');
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO = process.env.UL_REPO || resolve(HERE, '../..');
 const ADMIN = resolve(REPO, 'web/src/pages/Admin.tsx');
 const src = readFileSync(ADMIN, 'utf8');
 

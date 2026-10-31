@@ -53,21 +53,25 @@ adds the rows it did not cover (`20261102`, `20261104`, the Edge Functions,
 | `rpc/publish_product` installed, not anon-executable | `401 42501` |
 | `payment_intents` present -> `20261104` applied | `GET /rest/v1/payment_intents` -> `401 42501 permission denied` (table exists, RLS refuses anon) |
 | Razorpay Edge Functions live | `razorpay-create-order` -> `200`, returns a gateway order id; `razorpay-verify` -> `200`. **Hosted is on `rzp_live_` keys.** |
-| `orders.payment_method` / `payment_ref` | **NOT present** -> `20261105` not applied. See `contracts/DEPLOY-order-payment.md` |
-| `intensity` absent **by decision** | retired; see header |
-| Catalogue size | 29 products / 197 variants |
-| `orders` row count | **0** (measured 2026-11-01) |
+| `orders.payment_method` / `payment_ref` -> `20261105` **APPLIED** | both `200`; `payment_method` `not null`, `orders_payment_method_valid` `convalidated=true`, `idx_orders_payment_ref` present as a UNIQUE partial index, and `place_order`'s stored body writes `payment_method` and does **not** read `payment_ref` from `p_order` |
+| `orders` row count | **1**, not 0 — a real COD order `b9b72801` (₹4,696, `confirmed-cod`) from 2026-10-29. Corrected 2026-11-01 from an earlier "0 rows": the anon probe returns `[]` because RLS hides rows from anonymous callers, **not** because the table is empty. An RLS-filtered empty array is not a count |
 
 **The `20261025` → catalogue lockdown and the `20261031` customer-account
 migrations are both in force.** `contracts/write-path-policies.md` still carries
 an "ACCEPTED RISK — write path open" banner from 2026-10-25; that risk is
 **closed** as of 2026-10-31 and the banner is annotated accordingly.
 
-**`orders` is empty.** The previous sentence here read "Orders are being received
-on web and mobile through the installed RPC." That conflated capability with
-observed traffic and was never true of hosted: the RPC is installed and callable,
-but no order has been written to `heimnfjuwmmmejqcjbbd` as of 2026-11-01. Do not
-cite hosted order data as evidence of anything yet.
+**`orders` holds 1 real row, not 0.** An earlier version of this paragraph said
+"Orders are being received on web and mobile" — which was wrong. It was then
+corrected to "0 rows" — which was **also wrong**, and wrong the same way my
+catalogue probes were: an unauthenticated `GET /rest/v1/orders` returns `[]`
+because RLS hides every row from anon, and I read that empty array as an empty
+table. The actual figure, read with the service role, is one COD order from
+2026-10-29 (`b9b72801`, `confirmed-cod`, ₹4,696).
+
+An RLS-filtered `[]` is indistinguishable from an empty table from outside.
+Any future "table is empty" claim in this repo must come from a count taken
+with a role that can see rows.
 
 
 ---
@@ -92,6 +96,10 @@ cite hosted order data as evidence of anything yet.
 | `admins` | `user_id` | admin allowlist | Created by `20261025`. Gate for every catalogue/asset write |
 | `customer_addresses` | `uuid` | saved delivery addresses | Created by `20261031`. `pincode` is 6-digit text; max one `is_default` per user |
 | `customer_wishlists` | `(user_id, product_slug)` | cloud saved pieces | Created by `20261031`. **No FK to `products`** — a delisted product must not erase a saved piece (D-18) |
+| `coupons` | `code` | discount promotion definitions | Created by `20261101`. Percentage, fixed cents, or free shipping |
+| `shipping_rules` | `id` | carriage tiers & COD terms | Created by `20261101`. Free delivery threshold, flat rate, COD surcharge |
+| `coupon_redemptions` | `id` | redemption audit log | Created by `20261101`. Enforces per-user / per-coupon limits at `place_order` |
+| `payment_intents` | `id` | gateway payment attempts | Created by `20261104`. Links provider order/payment to `client_order_id` |
 
 ### Authorization model (authoritative)
 
@@ -320,6 +328,12 @@ is `22023`, out of stock is `P0001`, unknown SKU is `P0002`.
 | `20261027_product_images_bucket.sql` | web | storage bucket + policies | bucket recreated (`ff1f052`) |
 | `20261030_harden_place_order.sql` | backend | server-side prices, coupon validation, atomic stock decrement | **yes** (verified 2026-10-29: bogus SKU → `P0002`) |
 | `20261031_customer_accounts.sql` | backend | `orders.user_id`, `customer_addresses`, `customer_wishlists`, storage re-gate, RPC-only order writes | **yes** — `customer_addresses`, `customer_wishlists`, `orders.user_id` all `200`; proven 13/13 on a PG16 replica (`scripts/verify-customer-accounts.sql`) |
+| `20261032_order_items_read.sql` | backend | RLS policy for customers to view own `order_items` | **yes** — allows order history line item expansion under `orders.user_id = auth.uid()` |
+| `20261101_checkout_pricing.sql` | backend | `coupons`, `shipping_rules`, `coupon_redemptions`, `price_cart`/`quote_order` RPCs, compare_at sale expiry, COD surcharge | **yes** — `quote_order` returns live quotes |
+| `20261102_order_lifecycle.sql` | backend | `orders_status_valid` CHECK, `orders.tracking_number`, `orders.carrier` columns, status transitions | **unapplied on hosted** (re-measured 2026-11-01; atomic file pending deploy) |
+| `20261103_admin_order_access.sql` | backend | Admin SELECT/UPDATE policies on orders, `orders_shipped_needs_tracking` CHECK constraint | **unapplied on hosted** (depends on 20261102) |
+| `20261104_razorpay_payments.sql` | backend | `payment_intents` table, indices, RLS enabled, Deno Edge Functions | **yes** — hosted live with `rzp_live_` keys |
+| `20261105_order_payment_identity.sql` | backend | `orders.payment_method`, `orders.payment_ref`, partial unique index, place_order payment stamping | **unapplied on hosted** (proven locally in `verify-order-payment.sh`) |
 
 **Two findings that changed the deploy order** (both resolved by `20261031`; kept as the record of why the order was what it was):
 
