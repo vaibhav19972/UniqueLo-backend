@@ -75,6 +75,15 @@ This one does five things:
 
 **Check:** no error.
 
+> **Note (2026-10-31): `20261026` was edited after it was applied.** Its body now
+> inserts three placeholder `categories` rows so the chain can build on a fresh
+> database (they were a hard FK dependency no load order could satisfy). On hosted
+> those rows already exist and the insert is `on conflict do nothing` — a no-op.
+> Hosted therefore runs a version of that file that differs from the one in git.
+> Harmless today; it will surface as a checksum mismatch if `supabase` CLI
+> migration tracking is ever adopted, and must be reconciled then, not silently
+> re-applied.
+
 ---
 
 ## Step 4 — Prove it
