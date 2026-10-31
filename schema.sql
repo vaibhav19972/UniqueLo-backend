@@ -445,19 +445,25 @@ create table if not exists public.payment_intents (
   -- Paise. Identical to the repo's *_cents convention and to Razorpay's unit.
   amount_cents integer not null check (amount_cents >= 100),
   currency text not null default 'INR',
-  status text not null default 'created'
-    check (status in ('created', 'authorized', 'captured', 'failed', 'expired')),
+  status text not null default 'created',
   customer_email text not null,
   customer_name text,
   customer_phone text,
   shipping_address jsonb,
   coupon_code text,
-  -- The priced cart as created. place_order is called with THIS, never with a
-  -- cart the browser re-submits after the charge.
+  -- The priced cart as it stood when the charge was created. place_order is
+  -- called with THIS, never with a cart the browser re-submits.
   items jsonb not null,
   failure_reason text,
   created_at timestamptz not null default now(),
-  captured_at timestamptz
+  captured_at timestamptz,
+  -- Named, mirroring orders_status_valid (20261102), and NOT written inline on the
+  -- status column: check-schema-completeness.mjs parses columns with
+  -- /^\s{2}([a-z_]+)\s+[a-z(\[]/ and only skips lines starting with `constraint`,
+  -- so a bare `    check (...)` line risks being read as a column called `check`
+  -- and reported as drift. Cheap to match the existing convention now.
+  constraint payment_intents_status_valid
+    check (status in ('created', 'authorized', 'captured', 'failed', 'expired'))
 );
 
 -- ====================================================================

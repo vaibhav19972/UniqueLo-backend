@@ -108,14 +108,24 @@ select public.quote_order(
     'quantity', 1))
 );" 2>&1 | tee -a "$LOG"
 
-echo "--- RLS posture on the 7 restored tables ------------------------------" | tee -a "$LOG"
+echo "--- RLS posture on the restored + gateway tables -----------------------" | tee -a "$LOG"
 $PSQL_D -At -c "
 select c.relname || '  rls=' || c.relrowsecurity || '  policies=' || count(p.polname)
 from pg_class c join pg_namespace n on n.oid=c.relnamespace
 left join pg_policy p on p.polrelid=c.oid
 where n.nspname='public'
   and c.relname in ('admins','coupons','shipping_rules','coupon_redemptions',
-                    'customer_addresses','customer_wishlists','attribute_definitions')
+                    'customer_addresses','customer_wishlists','attribute_definitions',
+                    'payment_intents')
 group by c.relname, c.relrowsecurity order by c.relname;" 2>&1 | tee -a "$LOG"
+
+# The ledger must be unreachable from a publishable key. A grant here would mean
+# any browser could read or rewrite payments, so prove it rather than assume it.
+echo "--- anon/authenticated grants on payment_intents (expect none) ---------" | tee -a "$LOG"
+$PSQL_D -At -c "
+select coalesce(string_agg(grantee, ', '), 'none')
+from information_schema.table_privileges
+where table_schema='public' and table_name='payment_intents'
+  and grantee in ('anon','authenticated');" 2>&1 | tee -a "$LOG"
 
 step "DONE"

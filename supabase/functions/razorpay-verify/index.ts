@@ -45,7 +45,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  // Same fallback chain as razorpay-create-order. Newer Supabase projects expose
+  // SUPABASE_PUBLISHABLE_KEY and no SUPABASE_ANON_KEY; without both names this
+  // function would 503 AFTER the customer had already been charged, because
+  // create-order succeeded against the same project.
+  const anonKey =
+    Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_PUBLISHABLE_KEY');
 
   if (!keyId || !keySecret) {
     return json({ error: 'Payment gateway is not configured.' }, 503);
@@ -108,13 +113,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // ── Idempotency: a retried verify must not double-place an order ──────
   // Covers the case where place_order succeeded but the intent update did not.
-  // Checking the intent first is cheaper than provoking a duplicate-key error and
-  // then having to decide whether 23505 means "already done" or "broken".
   if (intent.placed_order_id) {
     return json({ success: true, order_id: intent.placed_order_id, already_verified: true });
-  }
-  if (intent.status === 'expired' || intent.status === 'failed') {
-    return json({ error: 'This payment attempt is closed. Please start a new one.' }, 409);
   }
 
   // ── Check 2: the amount actually paid ─────────────────────────────────
@@ -160,6 +160,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .eq('id', intent.id);
       return json({ error: 'Payment could not be settled. No order was created.' }, 402);
     }
+  }
+
+  // ── A CLOSED attempt that the customer still paid ─────────────────────
+  // `create-order` retires an intent when a re-price moves the total, and the
+  // modal may already be open when that happens. Razorpay will still take the
+  // money — the signature above proves it did. Refusing with a bare 409 and
+  // writing nothing is how a payment disappears from the ledger entirely: no
+  // order, no record, and the customer holding a bank SMS. Record it instead, as
+  // the refund queue, exactly like the amount-mismatch path.
+  if (intent.status === 'expired' || intent.status === 'failed') {
+    if (payment.status === 'captured') {
+      await admin
+        .from('payment_intents')
+        .update({
+          status: 'captured',
+          provider_payment_id: razorpay_payment_id,
+          captured_at: new Date().toISOString(),
+          failure_reason: `paid against a closed intent (was ${intent.status})`,
+        })
+        .eq('id', intent.id);
+      return json(
+        {
+          error:
+            'Payment received for an order that was repriced while you paid. Our team will refund or re-place it — do not pay again.',
+          payment_id: razorpay_payment_id,
+          retryable: false,
+        },
+        409
+      );
+    }
+    return json({ error: 'This payment attempt is closed. Please start a new one.' }, 409);
   }
 
   if (payment.status !== 'captured') {

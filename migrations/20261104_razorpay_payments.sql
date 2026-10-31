@@ -56,8 +56,7 @@ create table if not exists public.payment_intents (
   -- convention (formatPrice divides by 100), so there is NO conversion anywhere.
   amount_cents integer not null check (amount_cents >= 100),
   currency text not null default 'INR',
-  status text not null default 'created'
-    check (status in ('created', 'authorized', 'captured', 'failed', 'expired')),
+  status text not null default 'created',
   customer_email text not null,
   customer_name text,
   customer_phone text,
@@ -68,7 +67,12 @@ create table if not exists public.payment_intents (
   items jsonb not null,
   failure_reason text,
   created_at timestamptz not null default now(),
-  captured_at timestamptz
+  captured_at timestamptz,
+  -- Named, mirroring orders_status_valid (20261102). Keeping it off the status
+  -- column line matters: check-schema-completeness.mjs parses columns with
+  -- /^\s{2}([a-z_]+)\s+[a-z(\[]/ and only skips lines starting with `constraint`.
+  constraint payment_intents_status_valid
+    check (status in ('created', 'authorized', 'captured', 'failed', 'expired'))
 );
 
 comment on table public.payment_intents is

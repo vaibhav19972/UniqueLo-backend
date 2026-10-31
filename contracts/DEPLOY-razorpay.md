@@ -5,27 +5,42 @@
 -- cluster; that is not the same as "safe to apply". Read this before applying.
 --
 -- WHAT IT DOES: adds one table, `public.payment_intents`. It does not alter
--- `orders`, so no existing row is rewritten and no backfill runs. That is the
--- whole reason it is low-risk: every change is additive and touches nothing.
+-- `orders`, so no existing row is rewritten and no backfill runs. Every change is
+-- additive, which is the whole reason it is low-risk.
 --
 -- ORDER OF OPERATIONS
 -- -------------------
 -- 1. Apply this migration.
--- 2. Set the Edge Function secrets (never in the web bundle):
+-- 2. Set the Edge Function secrets. THE SECRET STAYS OUT OF THE BROWSER:
 --        supabase secrets set RAZORPAY_KEY_ID=... RAZORPAY_KEY_SECRET=...
--- 3. Deploy the two functions:
+--    `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are
+--    injected by the platform — do not set them by hand.
+-- 3. Deploy the two functions (from `backend/`, which has no `supabase/` CLI
+--    config yet, so link first):
+--        supabase link --project-ref <project-ref>
 --        supabase functions deploy razorpay-create-order
 --        supabase functions deploy razorpay-verify
--- 4. Set VITE_PAYMENTS_API_URL for the SPA to
---        https://<project-ref>.supabase.co/functions/v1
---    and VITE_RAZORPAY_KEY_ID to the PUBLIC key id only.
+-- 4. NOTHING TO ADD TO THE WEB BUILD. This is the part the first draft of this
+--    note got wrong, so it is stated plainly: there is no `VITE_PAYMENTS_API_URL`
+--    and no `VITE_RAZORPAY_KEY_ID`. The SPA reaches the functions through
+--    `supabase.functions.invoke`, which reuses the `VITE_SUPABASE_URL` /
+--    `VITE_SUPABASE_ANON_KEY` pair already in the build, and the key id is
+--    returned per-response by `razorpay-create-order`. A `VITE_*` secret would be
+--    inlined into shipped JavaScript and readable by anyone with devtools.
 --
 -- WHY THE SECRET IS NOT IN THE SPA
 -- --------------------------------
--- Vite inlines every `VITE_*` variable into the shipped JavaScript. A
--- `VITE_RAZORPAY_KEY_SECRET` would be readable by anyone who opens devtools, and
--- would let them create unsigned orders and forge signatures. The key id is
--- public by design (Razorpay ships it to the browser); the secret is not.
+-- Vite inlines every `VITE_*` variable into the bundle. A
+-- `VITE_RAZORPAY_KEY_SECRET` would let any visitor create orders and forge
+-- signatures. The key id is public by design (Razorpay ships it to the browser);
+-- the secret is not.
+--
+-- GUEST CHECKOUT
+-- --------------
+-- Works without special handling. The anon key is itself a valid JWT, so the
+-- platform's `verify_jwt` gate passes and `auth.uid()` is simply NULL. A signed-in
+-- customer's own JWT is forwarded into `place_order`, so `orders.user_id` is set
+-- and the order appears in their history.
 --
 -- ROLLBACK
 -- --------
@@ -34,7 +49,18 @@
 -- rows first if any are `captured`, because they are the only record of money
 -- taken.
 --
--- KNOWN GAP (KD-8): a captured payment whose `place_order` call fails leaves a
--- `captured` intent with no order. That row is the refund queue. See
--- contracts/known-defects.md.
+-- KNOWN GAPS (see contracts/known-defects.md)
+-- -------------------------------------------
+-- KD-8: a settled payment whose `place_order` call fails leaves a `captured` row
+-- with no order. It is found by `idx_payment_intents_orphans` and cleared by
+-- hand. A `payment.captured` webhook is the natural fix and would reconcile the
+-- "paid, then closed the tab before verify ran" case too, which today depends on
+-- the same manual query.
+--
+-- Deliberately deferred, recorded so they are not mistaken for oversights:
+--   * CORS is `*` on both functions. Functional, and should be narrowed to the
+--     storefront origins once the production domain is fixed.
+--   * No rate limiting on `razorpay-create-order`; repeated calls can mint gateway
+--     orders. Idempotency limits the damage to one live intent per cart, but a
+--     determined caller can still churn.
 -- ============================================================================
